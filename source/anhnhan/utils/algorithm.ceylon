@@ -5,23 +5,6 @@
     share with anhnhan@outlook.com in case of violation
  */
 
-"Returns the identity of the passed value.
-
- In most languages and environments, this just returns the value itself.
-
- Useful as a stub function for monoid-like systems, to denote that nothing
- should be done to the value.
-
-     coll.map(id) == coll
-
- Also useful in PHP 5.3 and below to circumvent an error in the grammar that
- prevents us from chaining method calls onto object constructor calls.
-
-     id(new \\stdClass)->foo()
- "
-shared T id<T>(T val)
-    => val;
-
 shared interface CollectionOversized of collectionOversized {}
 shared object collectionOversized satisfies CollectionOversized {}
 
