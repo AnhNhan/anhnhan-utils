@@ -104,9 +104,6 @@ class DispatcherTest()
         dispatcher.addListener(postFoo, listener.postFoo<BaseEvent>);
 
         value deleteEventBar = dispatcher.addListener("event.bar", (event) => event);
-        dispatcher.addListener("event.bar", (event) => event);
-        dispatcher.addListener("event.bar", (event) => event);
-        dispatcher.addListener("event.bar", (event) => event);
 
         assertTrue(dispatcher.hasListeners(preFoo));
         assertTrue(dispatcher.hasListeners(postFoo));
@@ -114,16 +111,10 @@ class DispatcherTest()
 
         assertEquals(dispatcher.getListeners(preFoo)?.size, 1);
         assertEquals(dispatcher.getListeners(postFoo)?.size, 1);
-        assertEquals(dispatcher.getListeners("event.bar")?.size, 4);
+        assertEquals(dispatcher.getListeners("event.bar")?.size, 1);
         assertEquals(dispatcher.allListeners().size, 3);
 
-        print("pre");
-
-        print(dispatcher.getListeners("event.bar"));
         deleteEventBar();
-        print(dispatcher.getListeners("event.bar"));
-
-        print("post");
 
         assertFalse(dispatcher.hasListeners("event.bar"));
         assertEquals(dispatcher.getListeners("event.bar")?.size, null);
