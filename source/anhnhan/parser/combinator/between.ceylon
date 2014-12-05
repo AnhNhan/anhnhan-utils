@@ -6,26 +6,27 @@
     Software provided as-is, no warranty
  */
 
-// TODO: Advance parser input state
-shared Failable<[T, T, T]> between<T, Ts>(Failable<T>(Ts) inbetween)(Failable<T>(Ts) left, Failable<T>(Ts) right)(Ts input)
+shared MaybeLiteral<[T, T, T], Ts> between<T, Ts>(MaybeLiteral<T, Ts>(Ts) inbetween)(MaybeLiteral<T, Ts>(Ts) left, MaybeLiteral<T, Ts>(Ts) right)(Ts input)
     given T satisfies Object
     given Ts satisfies {T*}
 {
-    if (is T left_result = left(input), is T between = inbetween(input), is T right_result = right(input))
+    if (is LiteralResult<T, Ts> left_result = left(input),
+        is LiteralResult<T, Ts> between = inbetween(left_result[1]),
+        is LiteralResult<T, Ts> right_result = right(between[1]))
     {
-        return [left_result, between, right_result];
+        return [[left_result[0], between[0], right_result[0]], right_result[1]];
     }
 
     return failure;
 }
 
-shared Failable<[T, T]> interleaved<T, Ts>(Failable<T>(Ts) inbetween)(Failable<T>(Ts) left, Failable<T>(Ts) right)(Ts input)
+shared MaybeLiteral<[T, T], Ts> interleaved<T, Ts>(MaybeLiteral<T, Ts>(Ts) inbetween)(MaybeLiteral<T, Ts>(Ts) left, MaybeLiteral<T, Ts>(Ts) right)(Ts input)
     given T satisfies Object
     given Ts satisfies {T*}
 {
-    if (is [T, T, T] result = between(inbetween)(left, right)(input))
+    if (is LiteralResult<[T, T, T], Ts> result = between(inbetween)(left, right)(input))
     {
-        return [result.first, result.rest.first];
+        return [[result[0][0], result[0][2]], result.rest.first];
     }
 
     return failure;

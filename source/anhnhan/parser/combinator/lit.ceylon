@@ -6,6 +6,11 @@
     Software provided as-is, no warranty
  */
 
+import ceylon.test {
+    test,
+    assertEquals
+}
+
 """Parses a single literal and returns it upon success, else it returns
    [[failure]].
 
@@ -14,35 +19,39 @@
        assert(result1 == 'a');
        Failure result2 = parse("foo");
        assert(result2 == failure);"""
-// TODO: Advance parser input state
-shared Failable<T> lit<T, Ts>(T literal)(Ts input)
+shared MaybeLiteral<T, Ts> lit<T, Ts>(T literal)(Ts input)
     given T satisfies Object
     given Ts satisfies {T*}
 {
     if (exists first = input.first, first == literal)
     {
-        return literal;
+        "Our upper bound of [[Iterable]] specifies that [[Iterable.rest]]
+         returns [[Iterable]], but this will not satisfy our upper bound."
+        assert(is Ts rest = input.rest);
+
+        return [literal, rest];
     }
 
     return failure;
 }
 
 "Convenience type-applied function for parsing single characters."
-shared Failable<Character>({Character*})(Character) litChar
+shared MaybeLiteral<Character, {Character*}>({Character*})(Character) litChar
     => lit<Character, {Character*}>;
 
 "Convenience function to parse a string of characters, but to have integers
  as the result."
-shared Failable<Integer>({Character*}) litCharToInt(Character char)
+shared MaybeLiteral<Integer, {Character*}>({Character*}) litCharToInt(Character char)
         => apply(Character.integer, litChar(char));
 
+test
 void testLit()
 {
-    value parse = lit<Character, {Character*}>('a');
+    value parse = litChar('a');
 
-    value result1 = parse("abc");
-    assert(result1 == 'a');
+    assertEquals(parse("abc"), ['a', "bc"]);
+    assertEquals(parse("acd"), ['a', "cd"]);
+    assertEquals(parse("a"), ['a', ""]);
 
-    value result2 = parse("foo");
-    assert(result2 == failure);
+    assertEquals(parse("foo"), failure);
 }

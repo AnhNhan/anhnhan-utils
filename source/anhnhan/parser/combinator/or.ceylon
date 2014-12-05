@@ -6,16 +6,15 @@
     Software provided as-is, no warranty
  */
 
-// TODO: Advance parser input state
-shared Failable<T> or<T, Ts>(Failable<T>(Ts) fun1, Failable<T>(Ts) fun2)(Ts input)
+shared MaybeLiteral<T, Ts> or<T, Ts>(MaybeLiteral<T, Ts>(Ts) fun1, MaybeLiteral<T, Ts>(Ts) fun2)(Ts input)
     given T satisfies Object
     given Ts satisfies {T*}
 {
-    if (is T first = fun1(input))
+    if (is LiteralResult<T, Ts> first = fun1(input))
     {
         return first;
     }
-    else if (is T second = fun2(input))
+    else if (is LiteralResult<T, Ts> second = fun2(input))
     {
         return second;
     }

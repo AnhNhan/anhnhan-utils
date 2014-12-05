@@ -6,13 +6,14 @@
     Software provided as-is, no warranty
  */
 
-shared Failable<Return> apply<T, Ts, Return>(Return(T) fun, Failable<T>(Ts) parser)(Ts input)
+shared MaybeLiteral<Return, Ts> apply<T, Ts, Return>(Return(T) fun, MaybeLiteral<T, Ts>(Ts) parser)(Ts input)
     given T satisfies Object
     given Ts satisfies {T*}
+    given Return satisfies Object
 {
-    if (is T result = parser(input))
+    if (is LiteralResult<T, Ts> result = parser(input))
     {
-        return fun(result);
+        return [fun(result[0]), result[1]];
     }
 
     return failure;
