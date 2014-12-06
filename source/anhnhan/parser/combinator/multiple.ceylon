@@ -13,14 +13,14 @@ import ceylon.collection {
 "Applies a rule multiple times on an input. It does not fail if the rule could
  not be applied, instead it returns an empty result. Use [[many]] instead if
  you want to receive a failure instead."
-shared MaybeLiteral<{T*}, Ts> some<T, Ts>(MaybeLiteral<T, Ts>(Ts) parser)(Ts input)
+shared MaybeLiteral<{T*}, Input> some<T, Input>(MaybeLiteral<T, Input>(Input) parser)(Input input)
     given T satisfies Object
-    given Ts satisfies {T*}
+    given Input satisfies {T*}
 {
     variable value _input = input;
     value results = LinkedList<T>();
 
-    while (is LiteralResult<T, Ts> result = parser(_input))
+    while (is LiteralResult<T, Input> result = parser(_input))
     {
         results.add(result[0]);
         _input = result[1];
@@ -31,13 +31,13 @@ shared MaybeLiteral<{T*}, Ts> some<T, Ts>(MaybeLiteral<T, Ts>(Ts) parser)(Ts inp
 
 "Convenience function to apply a rule multiple times on an input and expecting
  at least one result."
-shared MaybeLiteral<{T*}, Ts> many<T, Ts>(MaybeLiteral<T, Ts>(Ts) parser)(Ts input)
+shared MaybeLiteral<{T*}, Input> many<T, Input>(MaybeLiteral<T, Input>(Input) parser)(Input input)
     given T satisfies Object
-    given Ts satisfies {T*}
+    given Input satisfies {T*}
 {
     value results = some(parser)(input);
 
-    if (is LiteralResult<{T*}, Ts> results, results.first.empty)
+    if (is LiteralResult<{T*}, Input> results, results.first.empty)
     {
         return failure;
     }

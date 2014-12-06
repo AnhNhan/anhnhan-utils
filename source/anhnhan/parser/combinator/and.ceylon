@@ -14,11 +14,11 @@ import ceylon.test {
     test
 }
 
-shared MaybeLiteral<[T, T], Ts> and<T, Ts>(MaybeLiteral<T, Ts>(Ts) fun1, MaybeLiteral<T, Ts>(Ts) fun2)(Ts input)
+shared MaybeLiteral<[T, T], Input> and<T, Input>(MaybeLiteral<T, Input>(Input) fun1, MaybeLiteral<T, Input>(Input) fun2)(Input input)
     given T satisfies Object
-    given Ts satisfies {T*}
+    given Input satisfies {T*}
 {
-    if (is LiteralResult<T, Ts> first = fun1(input), is LiteralResult<T, Ts> second = fun2(first[1]))
+    if (is LiteralResult<T, Input> first = fun1(input), is LiteralResult<T, Input> second = fun2(first[1]))
     {
         return [[first[0], second[0]], second[1]];
     }
@@ -26,9 +26,9 @@ shared MaybeLiteral<[T, T], Ts> and<T, Ts>(MaybeLiteral<T, Ts>(Ts) fun1, MaybeLi
     return failure;
 }
 
-shared MaybeLiteral<{T*}, InputAndRest> sequence<T, InputAndRest>(MaybeLiteral<T, InputAndRest>(InputAndRest)+ parsers)(InputAndRest input)
+shared MaybeLiteral<{T*}, Input> sequence<T, Input>(MaybeLiteral<T, Input>(Input)+ parsers)(Input input)
     given T satisfies Object
-    given InputAndRest satisfies {T*}
+    given Input satisfies {T*}
 {
     variable value _input = input;
     value results = LinkedList<T>();
@@ -36,7 +36,7 @@ shared MaybeLiteral<{T*}, InputAndRest> sequence<T, InputAndRest>(MaybeLiteral<T
     for (parser in parsers)
     {
         value result = parser(_input);
-        if (is LiteralResult<T, InputAndRest> result)
+        if (is LiteralResult<T, Input> result)
         {
             results.add(result[0]);
             _input = result[1];

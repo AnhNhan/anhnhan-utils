@@ -6,9 +6,9 @@
     Software provided as-is, no warranty
  */
 
-shared alias LiteralResult<Literal, Rest>
+shared alias LiteralResult<Literal, InputRest>
     given Literal satisfies Object
-    => [Literal, Rest];
+    => [Literal, InputRest];
 
 "Denotes a failed parse attempt."
 shared interface Failure
@@ -16,13 +16,13 @@ shared interface Failure
 
 shared object failure satisfies Failure {}
 
-"Denotes either a successful parse attempt (yielding [[T]]), or a [[Failable]]."
+"Denotes either a successful parse attempt (yielding [[T]]), or a [[Failable]] upon failure."
 shared alias Failable<T> => T|Failure;
 
-"Denotes either a successful parse attempt (yielding [[LiteralResult]]), or a [[Failable]]."
-shared alias MaybeLiteral<Literal, Rest>
+"Denotes either a successful parse attempt (yielding [[LiteralResult]]), or a [[Failable]] upon failure."
+shared alias MaybeLiteral<Literal, InputRest>
     given Literal satisfies Object
-    => Failable<LiteralResult<Literal, Rest>>;
+    => Failable<LiteralResult<Literal, InputRest>>;
 
 "Indicates whether a parse attempt was successful."
 shared Boolean successful<T>(Failable<T> input)

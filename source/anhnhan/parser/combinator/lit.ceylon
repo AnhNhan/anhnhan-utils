@@ -19,15 +19,15 @@ import ceylon.test {
        assert(result1 == 'a');
        Failure result2 = parse("foo");
        assert(result2 == failure);"""
-shared MaybeLiteral<T, Ts> lit<T, Ts>(T literal)(Ts input)
+shared MaybeLiteral<T, Input> lit<T, Input>(T literal)(Input input)
     given T satisfies Object
-    given Ts satisfies {T*}
+    given Input satisfies {T*}
 {
     if (exists first = input.first, first == literal)
     {
         "Our upper bound of [[Iterable]] specifies that [[Iterable.rest]]
          returns [[Iterable]], but this will not satisfy our upper bound."
-        assert(is Ts rest = input.rest);
+        assert(is Input rest = input.rest);
 
         return [literal, rest];
     }
