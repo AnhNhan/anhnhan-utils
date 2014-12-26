@@ -6,7 +6,7 @@
     Software provided as-is, no warranty
  */
 
-module anhnhan.parser "@dev"
+module anhnhan.parser "dev"
 {
     import ceylon.collection "1.1.0";
     optional import ceylon.test "1.1.0";

@@ -21,3 +21,18 @@ shared MaybeLiteral<T, Input> or<T, Input>(MaybeLiteral<T, Input>(Input) fun1, M
 
     return failure;
 }
+
+shared MaybeLiteral<T, Input> anyOf<T, Input>(MaybeLiteral<T, Input>(Input)+ parsers)(Input input)
+    given T satisfies Object
+    given Input satisfies {T*}
+{
+    for (parser in parsers)
+    {
+        if (is LiteralResult<T, Input> result = parser(input))
+        {
+            return result;
+        }
+    }
+
+    return failure;
+}

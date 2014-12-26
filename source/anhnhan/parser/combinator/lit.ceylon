@@ -19,9 +19,9 @@ import ceylon.test {
        assert(result1 == 'a');
        Failure result2 = parse("foo");
        assert(result2 == failure);"""
-shared MaybeLiteral<T, Input> lit<T, Input>(T literal)(Input input)
-    given T satisfies Object
-    given Input satisfies {T*}
+shared MaybeLiteral<Literal, Input> lit<Literal, Input>(Literal literal)(Input input)
+    given Literal satisfies Object
+    given Input satisfies {Literal*}
 {
     if (exists first = input.first, first == literal)
     {

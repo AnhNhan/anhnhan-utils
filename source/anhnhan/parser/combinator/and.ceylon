@@ -11,7 +11,8 @@ import ceylon.collection {
 }
 import ceylon.test {
     assertEquals,
-    test
+    test,
+    assertTrue
 }
 
 shared MaybeLiteral<[T, T], Input> and<T, Input>(MaybeLiteral<T, Input>(Input) fun1, MaybeLiteral<T, Input>(Input) fun2)(Input input)
@@ -26,7 +27,7 @@ shared MaybeLiteral<[T, T], Input> and<T, Input>(MaybeLiteral<T, Input>(Input) f
     return failure;
 }
 
-shared MaybeLiteral<{T*}, Input> sequence<T, Input>(MaybeLiteral<T, Input>(Input)+ parsers)(Input input)
+shared MaybeLiteral<T[], Input> sequence<T, Input>(MaybeLiteral<T, Input>(Input)+ parsers)(Input input)
     given T satisfies Object
     given Input satisfies {T*}
 {
@@ -35,8 +36,7 @@ shared MaybeLiteral<{T*}, Input> sequence<T, Input>(MaybeLiteral<T, Input>(Input
 
     for (parser in parsers)
     {
-        value result = parser(_input);
-        if (is LiteralResult<T, Input> result)
+        if (is LiteralResult<T, Input> result = parser(_input))
         {
             results.add(result[0]);
             _input = result[1];
@@ -47,7 +47,10 @@ shared MaybeLiteral<{T*}, Input> sequence<T, Input>(MaybeLiteral<T, Input>(Input
         }
     }
 
-    return [results, _input];
+    "There should be at least one result from parsing."
+    assert(nonempty sequence = results.sequence());
+
+    return [sequence, _input];
 }
 
 test
@@ -84,10 +87,11 @@ void testSequence()
     value parser1 = sequence(litChar('a'), litChar('b'), litChar('c'), litChar('d'));
 
     value result = parser1("abcdefg");
-    assert(is LiteralResult<{Character*}, {Character*}> result);
-    value expected = [{'a', 'b', 'c', 'd'}, "efg"];
+    assert(is LiteralResult<Character[], {Character*}> result);
+    value expected = [{'a', 'b', 'c', 'd'}.sequence(), "efg"];
     print(result[0]);
     print(expected[0]);
+    assertTrue({for (index->res in result[0].indexed) res == (expected[0][index] else nothing)}.every(identity<Boolean>));
     assertEquals(result[0], expected[0]);
     assertEquals(result[1], expected[1]);
     //assertEquals(parser1("abcdefg"), [{'a', 'b', 'c', 'd'}, "efg"]);

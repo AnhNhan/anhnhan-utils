@@ -13,7 +13,8 @@ import ceylon.collection {
 "Applies a rule multiple times on an input. It does not fail if the rule could
  not be applied, instead it returns an empty result. Use [[many]] instead if
  you want to receive a failure instead."
-shared MaybeLiteral<{T*}, Input> some<T, Input>(MaybeLiteral<T, Input>(Input) parser)(Input input)
+see(`function many`)
+shared MaybeLiteral<T[], Input> some<T, Input>(MaybeLiteral<T, Input>(Input) parser)(Input input)
     given T satisfies Object
     given Input satisfies {T*}
 {
@@ -26,21 +27,34 @@ shared MaybeLiteral<{T*}, Input> some<T, Input>(MaybeLiteral<T, Input>(Input) pa
         _input = result[1];
     }
 
-    return [results, _input];
+    return [results.sequence(), _input];
 }
 
 "Convenience function to apply a rule multiple times on an input and expecting
  at least one result."
-shared MaybeLiteral<{T*}, Input> many<T, Input>(MaybeLiteral<T, Input>(Input) parser)(Input input)
+see(`function some`)
+shared MaybeLiteral<[T+], Input> many<T, Input>(MaybeLiteral<T, Input>(Input) parser)(Input input)
     given T satisfies Object
     given Input satisfies {T*}
 {
     value results = some(parser)(input);
 
-    if (is LiteralResult<{T*}, Input> results, results.first.empty)
+    if (is Failure results)
     {
         return failure;
     }
-
-    return results;
+    else
+    {
+        // We definitely need better type narrowing, those type asserts are unnecessary
+        assert(is LiteralResult<T[], Input> results);
+        if (nonempty literal = results.first)
+        {
+            value tail = results.rest.first;
+            return [literal, tail];
+        }
+        else
+        {
+            return failure;
+        }
+    }
 }
