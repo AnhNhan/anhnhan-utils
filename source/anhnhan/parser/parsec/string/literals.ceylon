@@ -10,16 +10,56 @@ import anhnhan.parser.parsec {
     ParseResult,
     literal,
     skipLiteral,
-    matchAtomIf,
-    skip
+    skip,
+    satisfy
 }
 
 shared
-ParseResult<Character, {Character*}>({Character*}) newline => literal('\n');
+StringParseResult({Character*}) newline
+        = literal('\n');
 shared
-ParseResult<Anything[], {Character*}>({Character*}) skipNewline => skipLiteral<Character, {Character*}>('\n');
+ParseResult<Anything[], {Character*}>({Character*}) skipNewline
+        = skipLiteral<Character, {Character*}>('\n');
 
 shared
-ParseResult<Character, {Character*}>({Character*}) whitespace => matchAtomIf(Character.whitespace);
+StringParseResult({Character*}) whitespace
+        = satisfy(Character.whitespace);
 shared
-ParseResult<Anything[], {Character*}>({Character*}) skipWhitespace => skip<Character>(whitespace);
+ParseResult<Anything[], {Character*}>({Character*}) skipWhitespace
+        = skip<Character>(whitespace);
+
+shared
+StringParseResult({Character*}) tab
+        = literal('\t');
+
+shared
+StringParseResult({Character*}) lowercase
+        = satisfy(isLower);
+
+shared
+StringParseResult({Character*}) uppercase
+        = satisfy(isUpper);
+
+shared
+StringParseResult({Character*}) asciiLower
+        = satisfy(isAsciiLower);
+
+shared
+StringParseResult({Character*}) asciiUpper
+        = satisfy(isAsciiUpper);
+
+shared
+StringParseResult({Character*}) letter
+        = satisfy(isLetter);
+
+shared
+StringParseResult({Character*}) asciiLetter
+        = satisfy(isAsciiLetter);
+
+shared
+StringParseResult({Character*}) digit
+        = satisfy(isDigit);
+
+shared
+StringParseResult({Character*}) hex
+        = satisfy(isHex);

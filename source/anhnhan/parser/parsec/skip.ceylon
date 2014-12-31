@@ -14,7 +14,6 @@ ParseResult<Anything[], {Atom*}> skip<Atom>(ParseResult<Atom, {Atom*}>({Atom*}) 
     switch (result)
     case (is Ok<Atom, {Atom*}>)
     {
-        // TODO: Nothing legit?
         return [[], rest(result)];
     }
     else
@@ -22,3 +21,19 @@ ParseResult<Anything[], {Atom*}> skip<Atom>(ParseResult<Atom, {Atom*}>({Atom*}) 
         return JustError(str);
     }
 }
+
+shared
+ParseResult<Anything[], {Atom*}> skip2<Atom>(ParseResult<Atom, {Atom*}>({Atom*}) parser)({Atom*} str)
+        given Atom satisfies Object
+        => bind {
+                (Ok<Atom, {Atom*}> val) => ok([], rest(val));
+                (Error<Atom, {Atom*}> error) => JustError(rest(error));
+            } (parser(str));
+
+shared
+Ok<Atom[], {Atom*}> ignoreSkip<Atom>(ParseResult<Atom, {Atom*}>({Atom*}) parser)({Atom*} str)
+        given Atom satisfies Object
+        => bind {
+                (Ok<Atom, {Atom*}> val) => ok([], rest(val));
+                (Error<Atom, {Atom*}> error) => ok([], str);
+            } (parser(str));

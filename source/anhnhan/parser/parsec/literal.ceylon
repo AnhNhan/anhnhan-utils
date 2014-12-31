@@ -11,6 +11,7 @@ import ceylon.test {
     assertEquals
 }
 
+"Parses a single literal, and returns it."
 shared
 ParseResult<Atom, {Atom*}> literal<Atom>(Atom atom)({Atom*} str)
         given Atom satisfies Object
@@ -20,7 +21,7 @@ ParseResult<Atom, {Atom*}> literal<Atom>(Atom atom)({Atom*} str)
         return [first, str.rest];
     }
 
-    return ExpectedLiteral(atom, str.first, str);
+    return ExpectedLiteral(atom, str.first, str, ["Expected '``atom``', but got '``str.first else "<null>"``'"]);
 }
 
 test
@@ -35,6 +36,7 @@ void testLiteral()
     assertEquals(parse("foo"), ExpectedLiteral('a', 'f', "foo"));
 }
 
+"Optimized version for skipping a single literal."
 shared
 ParseResult<Anything[], {Atom*}> skipLiteral<Atom, String>(Atom atom)(String str)
         given Atom satisfies Object
@@ -42,7 +44,6 @@ ParseResult<Anything[], {Atom*}> skipLiteral<Atom, String>(Atom atom)(String str
 {
     if (is Ok<Atom, {Atom*}> lit = literal(atom)(str))
     {
-        // TODO: Nothing legit?
         return [[], rest(lit)];
     }
 
@@ -56,7 +57,7 @@ ParseResult<Anything[], {Atom*}> skipLiteral<Atom, String>(Atom atom)(String str
         instead = [];
     }
 
-    return ExpectedLiteral([atom], instead, str);
+    return ExpectedLiteral<Atom[], {Atom*}>([atom], instead, str, ["Can't skip single literal. Expected '``atom``', but got '``instead.first else "<null>"``'"]);
 }
 
 test
@@ -81,26 +82,23 @@ ParseResult<Atom, {Atom*}> anyLiteral<Atom>({Atom*} str)
     return JustError(str);
 }
 
+// TODO: Consider U+FFFF as valid EOS, too?
 shared
-ParseResult<Anything[], {Atom*}> emptyLiteral<Atom>({Atom*} str)
+ParseResult<Atom[], Atoms> emptyLiteral<Atom, Atoms>(Atoms str)
         given Atom satisfies Object
+        given Atoms satisfies {Atom*}
 {
     if (exists nextLiteral = str.first)
     {
-        return JustError(str);
+        return JustError(str, ["Expected the end of the string."]);
     }
 
     return ok([], str);
 }
 
-shared
-ParseResult<Atom, {Atom*}> matchAtomIf<Atom>(Boolean(Atom) predicate)({Atom*} str)
-        given Atom satisfies Object
+test
+void testEmpty()
 {
-    if (exists first = str.first, predicate(first))
-    {
-        return ok(first, str.rest);
-    }
-
-    return JustError(str);
+    assertEquals(emptyLiteral(""), ok([], ""));
+    assertEquals(emptyLiteral("abc"), JustError("abc"));
 }
