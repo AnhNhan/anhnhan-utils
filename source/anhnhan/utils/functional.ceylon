@@ -43,6 +43,15 @@ shared Return acceptEntry<Return, Key, Item>(Callable<Return, [Key, Item]> calla
     given Key satisfies Object
     => callable(entry.key, entry.item);
 
+"Uncurries a given function of two curried arguments.
+
+     // Bothersome
+     value map = TreeMap<String, ...>((String first, String second) => first.compare(second));
+     // Cool
+     value map = TreeMap<String, ...>(uncurry(String.compare));"
+shared Return uncurry<Return, First, Second>(Return(Second)(First) fun)(First first, Second second)
+    => fun(first)(second);
+
 "Invokes all callables in a stream of void() functions."
 shared void invokeAll({Callable<Anything, []>*} callables)
     => callables.collect((callable) => callable());
