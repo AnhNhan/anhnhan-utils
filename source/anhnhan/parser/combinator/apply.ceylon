@@ -11,7 +11,7 @@ shared MaybeLiteral<Return, Input> apply<T, Input, Return>(Return(T) fun, MaybeL
     given Input satisfies {T*}
     given Return satisfies Object
 {
-    if (is LiteralResult<T, Input> result = parser(input))
+    if (is Ok<T, Input> result = parser(input))
     {
         return [fun(result[0]), result[1]];
     }

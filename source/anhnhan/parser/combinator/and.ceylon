@@ -19,7 +19,7 @@ shared MaybeLiteral<[T, T], Input> and<T, Input>(MaybeLiteral<T, Input>(Input) f
     given T satisfies Object
     given Input satisfies {T*}
 {
-    if (is LiteralResult<T, Input> first = fun1(input), is LiteralResult<T, Input> second = fun2(first[1]))
+    if (is Ok<T, Input> first = fun1(input), is Ok<T, Input> second = fun2(first[1]))
     {
         return [[first[0], second[0]], second[1]];
     }
@@ -36,7 +36,7 @@ shared MaybeLiteral<T[], Input> sequence<T, Input>(MaybeLiteral<T, Input>(Input)
 
     for (parser in parsers)
     {
-        if (is LiteralResult<T, Input> result = parser(_input))
+        if (is Ok<T, Input> result = parser(_input))
         {
             results.add(result[0]);
             _input = result[1];
@@ -87,10 +87,8 @@ void testSequence()
     value parser1 = sequence(litChar('a'), litChar('b'), litChar('c'), litChar('d'));
 
     value result = parser1("abcdefg");
-    assert(is LiteralResult<Character[], {Character*}> result);
+    assert(is Ok<Character[], {Character*}> result);
     value expected = [{'a', 'b', 'c', 'd'}.sequence(), "efg"];
-    print(result[0]);
-    print(expected[0]);
     assertTrue({for (index->res in result[0].indexed) res == (expected[0][index] else nothing)}.every(identity<Boolean>));
     assertEquals(result[0], expected[0]);
     assertEquals(result[1], expected[1]);

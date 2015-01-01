@@ -10,11 +10,11 @@ shared MaybeLiteral<T, Input> or<T, Input>(MaybeLiteral<T, Input>(Input) fun1, M
     given T satisfies Object
     given Input satisfies {T*}
 {
-    if (is LiteralResult<T, Input> first = fun1(input))
+    if (is Ok<T, Input> first = fun1(input))
     {
         return first;
     }
-    else if (is LiteralResult<T, Input> second = fun2(input))
+    else if (is Ok<T, Input> second = fun2(input))
     {
         return second;
     }
@@ -28,7 +28,7 @@ shared MaybeLiteral<T, Input> anyOf<T, Input>(MaybeLiteral<T, Input>(Input)+ par
 {
     for (parser in parsers)
     {
-        if (is LiteralResult<T, Input> result = parser(input))
+        if (is Ok<T, Input> result = parser(input))
         {
             return result;
         }

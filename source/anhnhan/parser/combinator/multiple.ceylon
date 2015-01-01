@@ -21,7 +21,7 @@ shared MaybeLiteral<T[], Input> some<T, Input>(MaybeLiteral<T, Input>(Input) par
     variable value _input = input;
     value results = LinkedList<T>();
 
-    while (is LiteralResult<T, Input> result = parser(_input))
+    while (is Ok<T, Input> result = parser(_input))
     {
         results.add(result[0]);
         _input = result[1];
@@ -46,7 +46,7 @@ shared MaybeLiteral<[T+], Input> many<T, Input>(MaybeLiteral<T, Input>(Input) pa
     else
     {
         // We definitely need better type narrowing, those type asserts are unnecessary
-        assert(is LiteralResult<T[], Input> results);
+        assert(is Ok<T[], Input> results);
         if (nonempty literal = results.first)
         {
             value tail = results.rest.first;
