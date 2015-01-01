@@ -73,6 +73,7 @@ interface Error<out Result, out Rest>
         of ExpectedLiteral<Result, Rest>
             | JustError<Result, Rest>
             | PointOutTheError<Result, Rest>
+            | MultitudeOfErrors<Result, Rest>
         given Result satisfies Object
         given Rest satisfies Object
 {
@@ -115,7 +116,16 @@ Error<Result, Rest> addMessage<Result, Rest>(String[]|String messages)(Error<Res
     {
         return PointOutTheError(error.beforeError, parseRest, newMessages);
     }
+    case (is MultitudeOfErrors<Result, Rest>)
+    {
+        return MultitudeOfErrors(error.errors, newMessages);
+    }
 }
+
+shared
+JustError<Nothing, Rest> toJustError<Rest>(Error<Object, Rest> error)
+        given Rest satisfies Object
+        => JustError(error.parseRest, error.messages);
 
 shared final
 class JustError<out Result, out Rest>(parseRest, messages = [])
@@ -229,4 +239,34 @@ class PointOutTheError<out Result, out Rest>(beforeError, parseRest, messages = 
     }
 
     shared actual String[] messages;
+}
+
+shared final
+class MultitudeOfErrors<out Result, out Rest>(errors, messages = [])
+        extends Object()
+        satisfies Error<Result, Rest>
+        given Result satisfies Object
+        given Rest satisfies Object
+{
+    shared
+    [Error<Result, Rest>+] errors;
+
+    shared actual String[] messages;
+
+    shared actual Rest parseRest = errors.max((Error<Result,Rest> x, Error<Result,Rest> y) => x.messages.size <=> y.messages.size).parseRest;
+
+    shared actual Boolean equals(Object that) {
+        if (is MultitudeOfErrors<Result, Rest> that) {
+            return errors==that.errors;
+        }
+        else {
+            return false;
+        }
+    }
+
+    shared actual Integer hash {
+        variable value hash = 1;
+        hash = 31*hash + errors.hash;
+        return hash;
+    }
 }
