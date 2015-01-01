@@ -29,9 +29,9 @@ shared
 ParseResult<Anything[], {Atom*}> not2<Atom, ReturnAtom>(ParseResult<ReturnAtom, {Atom*}>({Atom*}) parser)({Atom*} str)
         given Atom satisfies Object
         given ReturnAtom satisfies Object
-        => bind<ReturnAtom, {Atom*}, JustError<[], {Atom*}>, Ok<[], {Atom*}>> {
-                (ok) => JustError(str);
-                (error) => ok([], str);
+        => bind {
+                (Anything ok) => JustError(str);
+                (Error<ReturnAtom, {Atom*}> error) => ok([], str);
             } (parser(str));
 
 // TODO: Normalize newlines?

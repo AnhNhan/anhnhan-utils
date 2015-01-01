@@ -14,9 +14,9 @@ import ceylon.test {
 shared
 ParseResult<Atom, {Atom*}> or<Atom>(ParseResult<Atom, {Atom*}>({Atom*}) first, ParseResult<Atom, {Atom*}>({Atom*}) second)({Atom*} input)
         given Atom satisfies Object
-        => bind<Atom, {Atom*}, Ok<Atom, {Atom*}>, ParseResult<Atom, {Atom*}>> {
+        => bind {
                 identity<Ok<Atom, {Atom*}>>;
-                (error) => second(input);
+                (ParseResult<Atom, {Atom*}> error) => second(input);
             } (first(input));
 
 test
