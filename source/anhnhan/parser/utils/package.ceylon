@@ -6,4 +6,4 @@
     Software provided as-is, no warranty
  */
 
-shared package anhnhan.parser.utils;
+package anhnhan.parser.utils;
