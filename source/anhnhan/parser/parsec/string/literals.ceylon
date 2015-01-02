@@ -7,59 +7,59 @@
  */
 
 import anhnhan.parser.parsec {
-    ParseResult,
     literal,
     skipLiteral,
     skip,
-    satisfy
+    satisfy,
+    Parser
 }
 
 shared
-StringParseResult({Character*}) newline
+StringParser newline
         = literal('\n');
 shared
-ParseResult<Anything[], {Character*}>({Character*}) skipNewline
-        = skipLiteral<Character, {Character*}>('\n');
+Parser<Anything[], Character> skipNewline
+        = skipLiteral('\n');
 
 shared
-StringParseResult({Character*}) whitespace
+StringParser whitespace
         = satisfy(Character.whitespace);
 shared
-ParseResult<Anything[], {Character*}>({Character*}) skipWhitespace
-        = skip<Character>(whitespace);
+Parser<Anything[], Character> skipWhitespace
+        = skip(whitespace);
 
 shared
-StringParseResult({Character*}) tab
+StringParser tab
         = literal('\t');
 
 shared
-StringParseResult({Character*}) lowercase
+StringParser lowercase
         = satisfy(isLower);
 
 shared
-StringParseResult({Character*}) uppercase
+StringParser uppercase
         = satisfy(isUpper);
 
 shared
-StringParseResult({Character*}) asciiLower
+StringParser asciiLower
         = satisfy(isAsciiLower);
 
 shared
-StringParseResult({Character*}) asciiUpper
+StringParser asciiUpper
         = satisfy(isAsciiUpper);
 
 shared
-StringParseResult({Character*}) letter
+StringParser letter
         = satisfy(isLetter);
 
 shared
-StringParseResult({Character*}) asciiLetter
+StringParser asciiLetter
         = satisfy(isAsciiLetter);
 
 shared
-StringParseResult({Character*}) digit
+StringParser digit
         = satisfy(isDigit);
 
 shared
-StringParseResult({Character*}) hex
+StringParser hex
         = satisfy(isHex);

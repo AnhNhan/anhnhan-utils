@@ -13,8 +13,8 @@ import ceylon.test {
 
 "Parses a single literal, and returns it."
 shared
-ParseResult<Atom, {Atom*}> literal<Atom>(Atom atom)({Atom*} str)
-        given Atom satisfies Object
+ParseResult<Literal, Literal> literal<Literal>(Literal atom)({Literal*} str)
+        given Literal satisfies Object
 {
     if (exists first = str.first, first == atom)
     {
@@ -34,21 +34,26 @@ void testLiteral()
     assertEquals(parse("a"), ok('a', ""));
 
     assertEquals(parse("foo"), ExpectedLiteral('a', 'f', "foo"));
+
+    value parse2 = literal(1);
+
+    assertEquals(parse2([1, 2, 3]), ok(1, [2, 3]));
+    assertEquals(parse2([2, 3]), ExpectedLiteral(1, 2, [2, 3]));
 }
 
 "Optimized version for skipping a single literal."
 shared
-ParseResult<Anything[], {Atom*}> skipLiteral<Atom, String>(Atom atom)(String str)
-        given Atom satisfies Object
-        given String satisfies {Atom*}
+ParseResult<Anything[], Literal> skipLiteral<Literal>(Literal atom)({Literal*} str)
+        given Literal satisfies Object
 {
-    if (is Ok<Atom, {Atom*}> lit = literal(atom)(str))
+    value first = str.first;
+    if (exists first, first == atom)
     {
-        return [[], rest(lit)];
+        return [[], str.rest];
     }
 
-    [Atom]|[] instead;
-    if (exists first = str.first)
+    [Literal]|[] instead;
+    if (exists first)
     {
         instead = [first];
     }
@@ -57,22 +62,22 @@ ParseResult<Anything[], {Atom*}> skipLiteral<Atom, String>(Atom atom)(String str
         instead = [];
     }
 
-    return ExpectedLiteral<Atom[], {Atom*}>([atom], instead, str, ["Can't skip single literal. Expected '``atom``', but got '``instead.first else "<null>"``'"]);
+    return ExpectedLiteral<Literal[], Literal>([atom], instead, str, ["Can't skip single literal. Expected '``atom``', but got '``instead.first else "<null>"``'"]);
 }
 
 test
 void testSkipLiteral()
 {
-    value parser = skipLiteral<Character, {Character*}>('a');
+    value parser = skipLiteral('a');
 
     assertEquals(parser("abc"), ok([], "bc"));
-    assertEquals(parser("bc"), ExpectedLiteral(['a'], ['b'], "bc"));
-    assertEquals(parser(""), ExpectedLiteral(['a'], [], ""));
+    assertEquals(parser("bc"), ExpectedLiteral<Character[], Character>(['a'], ['b'], "bc"));
+    assertEquals(parser(""), ExpectedLiteral<Character[], Character>(['a'], [], ""));
 }
 
 shared
-ParseResult<Atom, {Atom*}> anyLiteral<Atom>({Atom*} str)
-        given Atom satisfies Object
+ParseResult<Literal, Literal> anyLiteral<Literal>({Literal*} str)
+        given Literal satisfies Object
 {
     if (exists nextLiteral = str.first)
     {
@@ -84,9 +89,8 @@ ParseResult<Atom, {Atom*}> anyLiteral<Atom>({Atom*} str)
 
 // TODO: Consider U+FFFF as valid EOS, too?
 shared
-ParseResult<Atom[], Atoms> emptyLiteral<Atom, Atoms>(Atoms str)
-        given Atom satisfies Object
-        given Atoms satisfies {Atom*}
+ParseResult<Literal[], Literal> emptyLiteral<Literal>({Literal*} str)
+        given Literal satisfies Object
 {
     if (exists nextLiteral = str.first)
     {
@@ -101,4 +105,18 @@ void testEmpty()
 {
     assertEquals(emptyLiteral(""), ok([], ""));
     assertEquals(emptyLiteral("abc"), JustError("abc"));
+}
+
+// TODO: Normalize newlines?
+"Parses a single literal if a given [[predicate]] applies."
+shared
+ParseResult<InputElement, InputElement> satisfy<InputElement>(Boolean(InputElement) predicate, String label = "")({InputElement*} input)
+        given InputElement satisfies Object
+{
+    if (exists nextLiteral = input.first, predicate(nextLiteral))
+    {
+        return ok(nextLiteral, input.rest);
+    }
+
+    return JustError(input, ["Did not satisfy predicate " + label]);
 }

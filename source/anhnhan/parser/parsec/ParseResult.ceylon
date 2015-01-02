@@ -7,78 +7,93 @@
  */
 
 shared
-alias ParseResult<Result, Rest>
+alias ParseResult<Result, InputElement>
         given Result satisfies Object
-        given Rest satisfies Object
-        => Ok<Result, Rest>
-            | Error<Result, Rest>;
+        => Ok<Result, InputElement>
+            | Error<Result, InputElement>;
 
 // Why can't this be a class alias?
 shared
-alias Ok<out Result, out Rest> => [Result, Rest];
+alias Ok<out Result, out InputElement>
+        => [Result, {InputElement*}];
+
+shared
+interface Parser<out Result, InputElement>
+        given Result satisfies Object
+        => ParseResult<Result, InputElement>({InputElement*});
 
 "Use this function if you want to look cool constructing tuples."
 shared
-Ok<Result, Rest> ok<Result, Rest>(Result result, Rest rest)
+Ok<Result, InputElement> ok<Result, InputElement>(Result result, {InputElement*} rest)
     => [result, rest];
 "Use this function if you don't remember at which index the result is located."
 shared
-Result result<Result, Rest>(Ok<Result, Rest> tup)
+Result result<Result>(Ok<Result, Anything> tup)
     => tup[0];
 "Use this function if you don't remember at which index the rest of the input is located."
 shared
-Rest rest<Result, Rest>(ParseResult<Result, Rest> input)
-        given Result satisfies Object
-        given Rest satisfies Object
+{InputElement*} rest<InputElement>(ParseResult<Object, InputElement> input)
 {
     switch (input)
-    case (is Ok<Result, Rest>)
+    case (is Ok<Object, InputElement>)
     {
         return input[1];
     }
-    case (is Error<Result, Rest>)
+    case (is Error<Object, InputElement>)
     {
         return input.parseRest;
     }
 }
 
 shared
-ReturnOk|ReturnError bind<Result, Rest, ReturnOk, ReturnError>(ok, error)(ParseResult<Result, Rest> input)
+ReturnOk|ReturnError bind<Result, InputElement, ReturnOk, ReturnError>(ok, error)(ParseResult<Result, InputElement> input)
         given Result satisfies Object
-        given Rest satisfies Object
 {
-    ReturnOk(Ok<Result, Rest>) ok;
-    ReturnError(Error<Result, Rest>) error;
+    ReturnOk(Ok<Result, InputElement>) ok;
+    ReturnError(Error<Result, InputElement>) error;
 
     switch (input)
-    case (is Ok<Result, Rest>)
+    case (is Ok<Result, InputElement>)
     {
         return ok(input);
     }
-    case (is Error<Result, Rest>)
+    case (is Error<Result, InputElement>)
     {
         return error(input);
     }
 }
 
 shared
-ReturnOk|Error<Result, Rest> bindOk<Result, Rest, ReturnOk>(ReturnOk(Ok<Result, Rest>) ok)(ParseResult<Result, Rest> input)
+ReturnOk|Error<Result, InputElement> bindOk<Result, InputElement, ReturnOk>(ReturnOk(Ok<Result, InputElement>) ok)(ParseResult<Result, InputElement> input)
         given Result satisfies Object
-        given Rest satisfies Object
-        given ReturnOk satisfies [Object, Rest]
-        => bind(ok, identity<Error<Result, Rest>>)(input);
+        given ReturnOk satisfies [Object, {InputElement*}]
+        => bind<Result, InputElement, ReturnOk, Error<Result, InputElement>>(ok, identity<Error<Result, InputElement>>)(input);
 
 shared
-interface Error<out Result, out Rest>
-        of ExpectedLiteral<Result, Rest>
-            | JustError<Result, Rest>
-            | PointOutTheError<Result, Rest>
-            | MultitudeOfErrors<Result, Rest>
+Boolean isEmptyResult<Result, InputElement>(Ok<Result, InputElement> input)
         given Result satisfies Object
-        given Rest satisfies Object
+{
+    value _result = result(input);
+    if (is Anything[] _result)
+    {
+        return _result == [];
+    }
+    else
+    {
+        return false;
+    }
+}
+
+shared
+interface Error<out Result, out InputElement>
+        of ExpectedLiteral<Result, InputElement>
+            | JustError<Result, InputElement>
+            | PointOutTheError<Result, InputElement>
+            | MultitudeOfErrors<Result, InputElement>
+        given Result satisfies Object
 {
     shared formal
-    Rest parseRest;
+    {InputElement*} parseRest;
 
     shared formal
     String[] messages;
@@ -86,9 +101,8 @@ interface Error<out Result, out Rest>
 
 "Appends the given error message(s) at the end of the error."
 shared
-Error<Result, Rest> addMessage<Result, Rest>(String[]|String messages)(Error<Result, Rest> error)
+Error<Result, InputElement> addMessage<Result, InputElement>(String[]|String messages)(Error<Result, InputElement> error)
         given Result satisfies Object
-        given Rest satisfies Object
 {
     String[] _messages;
     switch (messages)
@@ -104,40 +118,38 @@ Error<Result, Rest> addMessage<Result, Rest>(String[]|String messages)(Error<Res
     value parseRest = error.parseRest;
 
     switch (error)
-    case (is JustError<Result, Rest>)
+    case (is JustError<Result, InputElement>)
     {
         return JustError(parseRest, newMessages);
     }
-    case (is ExpectedLiteral<Result, Rest>)
+    case (is ExpectedLiteral<Result, InputElement>)
     {
-        return ExpectedLiteral<Result, Rest>(error.expected, error.instead, parseRest, newMessages);
+        return ExpectedLiteral<Result, InputElement>(error.expected, error.instead, parseRest, newMessages);
     }
-    case (is PointOutTheError<Result, Rest>)
+    case (is PointOutTheError<Result, InputElement>)
     {
         return PointOutTheError(error.beforeError, parseRest, newMessages);
     }
-    case (is MultitudeOfErrors<Result, Rest>)
+    case (is MultitudeOfErrors<Result, InputElement>)
     {
         return MultitudeOfErrors(error.errors, newMessages);
     }
 }
 
 shared
-JustError<Nothing, Rest> toJustError<Rest>(Error<Object, Rest> error)
-        given Rest satisfies Object
+JustError<Nothing, InputElement> toJustError<InputElement>(Error<Object, InputElement> error)
         => JustError(error.parseRest, error.messages);
 
 shared final
-class JustError<out Result, out Rest>(parseRest, messages = [])
+class JustError<out Result, out InputElement>(parseRest, messages = [])
         extends Object()
-        satisfies Error<Result, Rest>
+        satisfies Error<Result, InputElement>
         given Result satisfies Object
-        given Rest satisfies Object
 {
     shared actual
-    Rest parseRest;
+    {InputElement*} parseRest;
     shared actual Boolean equals(Object that) {
-        if (is JustError<Result, Rest> that) {
+        if (is JustError<Result, InputElement> that) {
             return parseRest==that.parseRest;
         }
         else {
@@ -155,11 +167,10 @@ class JustError<out Result, out Rest>(parseRest, messages = [])
 }
 
 shared final
-class ExpectedLiteral<out Result, out Rest>(Result|{Result*} _expected, instead, parseRest, messages = [])
+class ExpectedLiteral<out Result, out InputElement>(Result|{Result*} _expected, instead, parseRest, messages = [])
         extends Object()
-        satisfies Error<Result, Rest>
+        satisfies Error<Result, InputElement>
         given Result satisfies Object
-        given Rest satisfies Object
 {
     shared
     {Result*} expected;
@@ -179,12 +190,12 @@ class ExpectedLiteral<out Result, out Rest>(Result|{Result*} _expected, instead,
     Result? instead;
 
     shared actual
-    Rest parseRest;
+    {InputElement*} parseRest;
 
     string = "ExpectedLiteral(expected = '``expected``', instead = '``instead else "<null>"``', rest = '``parseRest``')";
 
     shared actual Boolean equals(Object that) {
-        if (is ExpectedLiteral<Result, Rest> that) {
+        if (is ExpectedLiteral<Result, InputElement> that) {
             // Skipping instead is sensible, considering it is only for helping
             return expected==that.expected &&
                 parseRest==that.parseRest;
@@ -209,20 +220,19 @@ class ExpectedLiteral<out Result, out Rest>(Result|{Result*} _expected, instead,
 }
 
 shared final
-class PointOutTheError<out Result, out Rest>(beforeError, parseRest, messages = [])
+class PointOutTheError<out Result, out InputElement>(beforeError, parseRest, messages = [])
         extends Object()
-        satisfies Error<Result, Rest>
+        satisfies Error<Result, InputElement>
         given Result satisfies Object
-        given Rest satisfies Object
 {
     shared
-    Rest beforeError;
+    {InputElement*} beforeError;
 
     shared actual
-    Rest parseRest;
+    {InputElement*} parseRest;
 
     shared actual Boolean equals(Object that) {
-        if (is PointOutTheError<Result, Rest> that) {
+        if (is PointOutTheError<Result, InputElement> that) {
             return beforeError==that.beforeError &&
                 parseRest==that.parseRest;
         }
@@ -242,21 +252,20 @@ class PointOutTheError<out Result, out Rest>(beforeError, parseRest, messages = 
 }
 
 shared final
-class MultitudeOfErrors<out Result, out Rest>(errors, messages = [])
+class MultitudeOfErrors<out Result, out InputElement>(errors, messages = [])
         extends Object()
-        satisfies Error<Result, Rest>
+        satisfies Error<Result, InputElement>
         given Result satisfies Object
-        given Rest satisfies Object
 {
     shared
-    [Error<Result, Rest>+] errors;
+    [Error<Result, InputElement>+] errors;
 
     shared actual String[] messages;
 
-    shared actual Rest parseRest = errors.max((Error<Result,Rest> x, Error<Result,Rest> y) => x.messages.size <=> y.messages.size).parseRest;
+    shared actual {InputElement*} parseRest = errors.max((Error<Result,InputElement> x, Error<Result,InputElement> y) => x.messages.size <=> y.messages.size).parseRest;
 
     shared actual Boolean equals(Object that) {
-        if (is MultitudeOfErrors<Result, Rest> that) {
+        if (is MultitudeOfErrors<Result, InputElement> that) {
             return errors==that.errors;
         }
         else {

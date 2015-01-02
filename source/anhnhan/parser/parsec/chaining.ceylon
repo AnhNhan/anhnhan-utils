@@ -6,52 +6,56 @@
     Software provided as-is, no warranty
  */
 
-import anhnhan.parser.combinator {
-    Ok
-}
-
 import ceylon.collection {
     LinkedList
 }
 
-shared
-ParseResult<[Atom, Atom], {Atom*}> and<Atom>(firstParser, secondParser)({Atom*} str)
-        given Atom satisfies Object
+ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, SecondLiteral, InputElement>(firstP, secondP)({InputElement*} input)
+        given FirstLiteral satisfies Object
+        given SecondLiteral satisfies Object
 {
-    ParseResult<Atom, {Atom*}>({Atom*}) firstParser;
-    ParseResult<Atom, {Atom*}>({Atom*}) secondParser;
+    Parser<FirstLiteral, InputElement> firstP;
+    Parser<SecondLiteral, InputElement> secondP;
 
-    value first = firstParser(str);
-    if (is Ok<Atom, {Atom*}> first)
+    value firstR = firstP(input);
+    switch (firstR)
+    case (is Ok<FirstLiteral, InputElement>)
     {
-        value second = secondParser(rest(first));
-        if (is Ok<Atom, {Atom*}> second)
+        value secondR = secondP(rest(firstR));
+        switch (secondR)
+        case (is Ok<SecondLiteral, InputElement>)
         {
-            return ok([result(first), result(second)], rest(second));
+            return ok([result(firstR), result(secondR)], rest(secondR));
         }
-        return PointOutTheError(rest(first), rest(second));
+        case (is Error<SecondLiteral, InputElement>)
+        {
+            return toJustError(secondR);
+        }
     }
-    return JustError(rest(first));
+    case (is Error<FirstLiteral, InputElement>)
+    {
+        return toJustError(firstR);
+    }
 }
 
-shared
-ParseResult<Atom[], {Atom*}> sequence<Atom>(ParseResult<Atom, {Atom*}>({Atom*})+ parsers)({Atom*} str)
-        given Atom satisfies Object
+ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({InputElement*} input)
+        given Literal satisfies Object
 {
-    variable value _input = str;
-    value results = LinkedList<Atom>();
+    Parser<Literal, InputElement>+ parsers;
+    variable value _input = input;
+    value results = LinkedList<Literal>();
 
     for (parser in parsers)
     {
         value _result = parser(_input);
-        if (is Ok<Atom, {Atom*}> _result)
+        if (is Ok<Literal, InputElement> _result)
         {
             _input = rest(_result);
             results.add(result(_result));
         }
         else
         {
-            return PointOutTheError(str.take(_input.size), rest(_result));
+            return PointOutTheError(input.take(_input.size), rest(_result));
         }
     }
 
@@ -60,13 +64,13 @@ ParseResult<Atom[], {Atom*}> sequence<Atom>(ParseResult<Atom, {Atom*}>({Atom*})+
 }
 
 shared
-ParseResult<Atom[], {Atom*}> zeroOrMore<Atom>(ParseResult<Atom, {Atom*}>({Atom*}) parser)({Atom*} str)
-        given Atom satisfies Object
+ParseResult<Literal[], InputElement> zeroOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} str)
+        given Literal satisfies Object
 {
     variable value _input = str;
-    value results = LinkedList<Atom>();
+    value results = LinkedList<Literal>();
 
-    while (is Ok<Atom, {Atom*}> _result = parser(_input))
+    while (is Ok<Literal, InputElement> _result = parser(_input))
     {
         results.add(result(_result));
         _input = rest(_result);
@@ -76,21 +80,22 @@ ParseResult<Atom[], {Atom*}> zeroOrMore<Atom>(ParseResult<Atom, {Atom*}>({Atom*}
     return ok(results.sequence(), _input);
 }
 
+// Success may be skewed due to possibly containing empty results.
 shared
-ParseResult<[Atom+], {Atom*}> oneOrMore<Atom>(ParseResult<Atom, {Atom*}>({Atom*}) parser)({Atom*} str)
-        given Atom satisfies Object
+ParseResult<[Literal+], InputElement> oneOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} str)
+        given Literal satisfies Object
 {
-    value results = zeroOrMore<Atom>(parser)(str);
+    value results = zeroOrMore<Literal, InputElement>(parser)(str);
 
     switch (results)
     // Can this case even apply? Won't [[zeroOrMore]] just return an empty Ok-sequence?
-    case (is Error<Atom[], {Atom*}>)
+    case (is Error<Literal[], InputElement>)
     {
         // Do any error information get lost?
         // Btw, this has to be explicitly constructed since we can't just return it (incompatible types)
         return JustError(rest(results));
     }
-    case (is Ok<Atom[], {Atom*}>)
+    case (is Ok<Literal[], InputElement>)
     {
         if (nonempty literal = result(results))
         {
