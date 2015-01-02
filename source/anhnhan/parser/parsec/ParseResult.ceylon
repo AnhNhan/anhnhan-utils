@@ -252,7 +252,7 @@ class PointOutTheError<out Result, out InputElement>(beforeError, parseRest, mes
 }
 
 shared final
-class MultitudeOfErrors<out Result, out InputElement>(errors, messages = [])
+class MultitudeOfErrors<out Result, out InputElement>(errors, String[] _messages = [])
         extends Object()
         satisfies Error<Result, InputElement>
         given Result satisfies Object
@@ -260,7 +260,8 @@ class MultitudeOfErrors<out Result, out InputElement>(errors, messages = [])
     shared
     [Error<Result, InputElement>+] errors;
 
-    shared actual String[] messages;
+    shared actual String[] messages
+            = errors*.messages.append([_messages]).reduce(uncurry(Sequential<String>.append<String>));
 
     shared actual {InputElement*} parseRest = errors.max((Error<Result,InputElement> x, Error<Result,InputElement> y) => x.messages.size <=> y.messages.size).parseRest;
 
