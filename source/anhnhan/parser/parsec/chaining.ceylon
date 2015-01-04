@@ -55,7 +55,7 @@ ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({I
         }
         else
         {
-            return PointOutTheError(input.take(_input.size), rest(_result));
+            return PointOutTheError(input.take(rest(_result).size), rest(_result));
         }
     }
 

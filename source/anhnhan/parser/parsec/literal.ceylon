@@ -56,7 +56,7 @@ ParseResult<Literal[], Literal> literals<Literal>([Literal+] literals, Integer i
         return error("Unexpected end of input.");
     }
 
-    if (str != literals)
+    if (!literals.startsWith(LinkedList(str)))
     {
         return error("Input does not match");
     }

@@ -197,7 +197,7 @@ class ExpectedLiteral<out Result, out InputElement>(Result|{Result*} _expected, 
     shared actual
     {InputElement*} parseRest;
 
-    string = "ExpectedLiteral(expected = '``expected``', instead = '``instead else "<null>"``', rest = '``parseRest``')";
+    string = "ExpectedLiteral(expected = '``expected``', instead = '``instead else "<null>"``', rest = '``parseRest``', messages=``messages``)";
 
     shared actual Boolean equals(Object that) {
         if (is ExpectedLiteral<Result, InputElement> that) {
@@ -254,6 +254,8 @@ class PointOutTheError<out Result, out InputElement>(beforeError, parseRest, mes
     }
 
     shared actual String[] messages;
+
+    string = "PointOutTheError(beforeError=``beforeError``, parseRest=``parseRest``, messages=``messages``)";
 }
 
 shared final
