@@ -14,6 +14,7 @@ ParseResult<Anything[], InputElement> skip<Literal, InputElement>(Parser<Literal
                 (Error<Literal, InputElement> error) => JustError(input, ["Could not skip."]);
             } (parser(input));
 
+"Aka skippable. To skip or not to skip."
 shared
 ParseResult<Anything[], InputElement> skipIgnore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
