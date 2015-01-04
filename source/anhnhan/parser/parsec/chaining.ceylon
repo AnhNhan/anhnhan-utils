@@ -64,7 +64,7 @@ ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({I
 }
 
 shared
-ParseResult<Literal[], InputElement> zeroOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} str)
+Ok<Literal[], InputElement> zeroOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} str)
         given Literal satisfies Object
 {
     variable value _input = str;
@@ -86,24 +86,12 @@ ParseResult<[Literal+], InputElement> oneOrMore<Literal, InputElement>(Parser<Li
         given Literal satisfies Object
 {
     value results = zeroOrMore<Literal, InputElement>(parser)(str);
-
-    switch (results)
-    // Can this case even apply? Won't [[zeroOrMore]] just return an empty Ok-sequence?
-    case (is Error<Literal[], InputElement>)
+    if (nonempty literal = result(results))
     {
-        // Do any error information get lost?
-        // Btw, this has to be explicitly constructed since we can't just return it (incompatible types)
-        return JustError(rest(results));
+        return ok(literal, rest(results));
     }
-    case (is Ok<Literal[], InputElement>)
+    else
     {
-        if (nonempty literal = result(results))
-        {
-            return [literal, rest(results)];
-        }
-        else
-        {
-            return JustError(str);
-        }
+        return JustError(str);
     }
 }
