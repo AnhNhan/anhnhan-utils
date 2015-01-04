@@ -7,7 +7,8 @@
  */
 
 import anhnhan.parser.parsec.string {
-    skipWhitespace
+    skipWhitespace,
+    whitespace
 }
 
 import ceylon.test {
@@ -70,4 +71,46 @@ void test0004()
     );
 
     assertEquals(parse(str), ok(['a', ['b', 'c']], ""));
+}
+
+test
+void test0005()
+{
+    value str1 = "abc def\n";
+    value parse = sequence<Character[], Character>(manySatisfy(Character.letter), lookahead<Character, Character>(satisfy(Character.whitespace)));
+
+    value pass1 = parse(str1);
+    assert(is Ok<Character[][], Character> pass1);
+    assertEquals(pass1, ok([['a', 'b', 'c'], []], " def\n"));
+
+    value str2 = rest(whitespace(rest(pass1)));
+    value pass2 = parse(str2);
+    assert(is Ok<Character[][], Character> pass2);
+    assertEquals(pass2, ok([['d', 'e', 'f'], []], "\n"));
+
+    value str3 = rest(pass2);
+    value pass3 = negativeLookahead<Character, Character>(whitespace)(str3);
+    assert(is Error<Character[], Character> pass3);
+    assertEquals(rest(pass3), "\n");
+
+    value pass4 = lookahead<Character, Character>(whitespace)(str3);
+    assert(is Ok<Character[], Character> pass4);
+    assertEquals(rest(pass4), "\n");
+}
+
+test
+void test0006()
+{
+    assert(nonempty fooStr = "foo".sequence());
+    value fooP = literals(fooStr);
+    value str1 = "foo    foo-foo";
+    value parse1 = sequence<Character[], Character>(fooP, manySatisfy(Character.whitespace), fooP);
+
+    value result1 = fooP(str1);
+    assert(is Ok<Character[], Character> result1);
+    assertEquals(result(result1), ['f', 'o', 'o']);
+
+    value result2 = parse1(str1);
+    assert(is Ok<Character[][], Character> result2);
+    assertEquals(result(result2), [['f', 'o', 'o'], [' ', ' ', ' ', ' '], ['f', 'o', 'o']]);
 }
