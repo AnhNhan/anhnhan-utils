@@ -137,6 +137,11 @@ Error<Result, InputElement> addMessage<Result, InputElement>(String[]|String mes
 }
 
 shared
+Error<Result, InputElement> addMessage2<Result, InputElement>(Error<Result, InputElement> error)(String[]|String messages)
+        given Result satisfies Object
+        => addMessage<Result, InputElement>(messages)(error);
+
+shared
 JustError<Nothing, InputElement> toJustError<InputElement>(Error<Object, InputElement> error)
         => JustError(error.parseRest, error.messages);
 
