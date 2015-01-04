@@ -6,6 +6,9 @@
     Software provided as-is, no warranty
  */
 
+import ceylon.collection {
+    LinkedList
+}
 import ceylon.test {
     test,
     assertEquals
@@ -21,7 +24,7 @@ ParseResult<Literal, Literal> literal<Literal>(Literal atom)({Literal*} str)
         return [first, str.rest];
     }
 
-    return ExpectedLiteral(atom, str.first, str, ["Expected '``atom``', but got '``str.first else "<null>"``'"]);
+    return ExpectedLiteral(atom, str.first, str, ["Expected '``atom``', but got '``str.first else "<end of input>"``'"]);
 }
 
 test
@@ -39,6 +42,26 @@ void testLiteral()
 
     assertEquals(parse2([1, 2, 3]), ok(1, [2, 3]));
     assertEquals(parse2([2, 3]), ExpectedLiteral(1, 2, [2, 3]));
+}
+
+shared
+ParseResult<Literal[], Literal> literals<Literal>([Literal+] literals, Integer insteadTakeExtra = 5)({Literal*} input)
+        given Literal satisfies Object
+{
+    value str = input.take(literals.size);
+    value error = addMessage2(ExpectedLiteral<Literal[], Literal>(literals, input.take(literals.size + insteadTakeExtra).sequence(), input));
+
+    if (str.size.smallerThan(literals.size))
+    {
+        return error("Unexpected end of input.");
+    }
+
+    if (str != literals)
+    {
+        return error("Input does not match");
+    }
+
+    return ok(literals, input.skip(literals.size));
 }
 
 "Optimized version for skipping a single literal."
@@ -62,7 +85,7 @@ ParseResult<Anything[], Literal> skipLiteral<Literal>(Literal atom)({Literal*} s
         instead = [];
     }
 
-    return ExpectedLiteral<Literal[], Literal>([atom], instead, str, ["Can't skip single literal. Expected '``atom``', but got '``instead.first else "<null>"``'"]);
+    return ExpectedLiteral<Literal[], Literal>([atom], instead, str, ["Can't skip single literal. Expected '``atom``', but got '``instead.first else "<end of input>"``'"]);
 }
 
 test
@@ -119,4 +142,35 @@ ParseResult<InputElement, InputElement> satisfy<InputElement>(Boolean(InputEleme
     }
 
     return JustError(input, ["Did not satisfy predicate " + label]);
+}
+
+"At least one satisfied."
+shared
+ParseResult<[InputElement+], InputElement> manySatisfy<InputElement>(Boolean(InputElement) predicate, String label = "")({InputElement*} input)
+        given InputElement satisfies Object
+{
+    value satisfyF = satisfy(predicate, label);
+
+    value list = LinkedList<InputElement>();
+    variable
+    value _input = input;
+    variable
+    value _result = satisfyF(_input);
+
+    while (is Ok<InputElement, InputElement> __result = _result)
+    {
+        _input = rest(__result);
+        list.add(result(__result));
+        _result = satisfyF(_input);
+    }
+
+    value seq = list.sequence();
+    if (nonempty seq)
+    {
+        return ok(seq, _input);
+    }
+    else
+    {
+        return JustError(input, ["Did not satisfy predicate " + label]);
+    }
 }
