@@ -7,7 +7,7 @@
  */
 
 shared
-ParseResult<Anything[], InputElement> not<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
+ParseResult<[], InputElement> not<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
         => parser(input).bind {
                 (ok) => JustError(input);

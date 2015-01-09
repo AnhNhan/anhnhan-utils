@@ -7,7 +7,7 @@
  */
 
 shared
-ParseResult<Literal[], InputElement> lookahead<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
+ParseResult<[], InputElement> lookahead<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
         => parser(input).bind(
                 (_ok) => ok([], input),
@@ -16,7 +16,7 @@ ParseResult<Literal[], InputElement> lookahead<Literal, InputElement>(Parser<Lit
             );
 
 shared
-ParseResult<Literal[], InputElement> negativeLookahead<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
+ParseResult<[], InputElement> negativeLookahead<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
         => parser(input).bind(
                 (_ok) => JustError(input, ["Negative lookahead did match."]),

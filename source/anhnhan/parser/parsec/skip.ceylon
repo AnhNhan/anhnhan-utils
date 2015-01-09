@@ -6,7 +6,8 @@
     Software provided as-is, no warranty
  */
 
-""
+"Applies a [[parser]] on the [[input]] (eventually advancing the input state),
+ and discards the parsed result. Effectively 'skips' the result of the parser."
 shared
 ParseResult<[], InputElement> skip<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object

@@ -12,8 +12,6 @@ import ceylon.collection {
 
 shared
 ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, SecondLiteral, InputElement>(firstP, secondP)({InputElement*} input)
-        given FirstLiteral satisfies Object
-        given SecondLiteral satisfies Object
 {
     Parser<FirstLiteral, InputElement> firstP;
     Parser<SecondLiteral, InputElement> secondP;
@@ -41,7 +39,6 @@ ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, Secon
 
 shared
 ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({InputElement*} input)
-        given Literal satisfies Object
 {
     Parser<Literal, InputElement>+ parsers;
     variable value _input = input;
@@ -67,7 +64,6 @@ ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({I
 
 shared
 Ok<Literal[], InputElement> zeroOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} str)
-        given Literal satisfies Object
 {
     variable value _input = str;
     value results = LinkedList<Literal>();
@@ -85,15 +81,4 @@ Ok<Literal[], InputElement> zeroOrMore<Literal, InputElement>(Parser<Literal, In
 // Success may be skewed due to possibly containing empty results.
 shared
 ParseResult<[Literal+], InputElement> oneOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} str)
-        given Literal satisfies Object
-{
-    value results = zeroOrMore<Literal, InputElement>(parser)(str);
-    if (nonempty literal = results.result)
-    {
-        return ok(literal, results.rest);
-    }
-    else
-    {
-        return JustError(str);
-    }
-}
+        => forceMany(zeroOrMore<Literal, InputElement>(parser)(str));

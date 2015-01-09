@@ -15,7 +15,7 @@ import ceylon.test {
     assertEquals
 }
 
-"Aka `between`."
+"Similar to `between`, but also returns the delimeters."
 shared
 Ok<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement>|Error<DelimLiteral, InputElement> enclosedBy<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
         given InnerLiteral satisfies Object
@@ -105,3 +105,32 @@ void testEnclosedByLiteral()
 
     assert(is Error<Character, Character> result1_2 = parse1(input1_2));
 }
+
+"[[inner]] is possibly-empty."
+shared
+Ok<InnerLiteral[], InputElement>|Error<DelimLiteral, InputElement> between<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
+        given InnerLiteral satisfies Object
+        given DelimLiteral satisfies Object
+{
+    Parser<DelimLiteral, InputElement> delim;
+    Parser<InnerLiteral, InputElement> inner;
+    Parser<DelimLiteral, InputElement> delimRight;
+
+    value result = enclosedBy(delim, inner, delimRight)(input);
+
+    switch (result)
+    case (is Ok<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement>)
+    {
+        return ok(result.result[1], result.rest);
+    }
+    case (is Error<DelimLiteral, InputElement>)
+    {
+        return result;
+    }
+}
+
+shared
+Ok<InnerLiteral[], InputElement>|Error<InputElement, InputElement> betweenLiteral<InnerLiteral, InputElement>(InputElement delim, Parser<InnerLiteral, InputElement> inner, InputElement delimRight = delim)({InputElement*} input)
+        given InnerLiteral satisfies Object
+        given InputElement satisfies Object
+        => between(literal(delim), inner, literal(delimRight))(input);
