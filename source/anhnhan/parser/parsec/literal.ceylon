@@ -50,16 +50,16 @@ ParseResult<Literal[], Literal> literals<Literal>(List<Literal> literals, Intege
 {
     value sequence = literals.sequence();
     value str = input.take(literals.size);
-    value error = addMessage2(ExpectedLiteral<Literal[], Literal>(sequence, input.take(literals.size + insteadTakeExtra).sequence(), input));
+    value error = ExpectedLiteral<Literal[], Literal>(sequence, input.take(literals.size + insteadTakeExtra).sequence(), input);
 
     if (str.size.smallerThan(literals.size))
     {
-        return error("Unexpected end of input.");
+        return error.appendMessage("Unexpected end of input.");
     }
 
     if (!literals.startsWith(LinkedList(str)))
     {
-        return error("Input does not match.");
+        return error.appendMessage("Input does not match.");
     }
 
     return ok(sequence, input.skip(literals.size));

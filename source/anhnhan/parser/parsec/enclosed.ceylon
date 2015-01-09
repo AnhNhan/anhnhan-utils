@@ -28,7 +28,7 @@ Ok<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement>|Error<DelimLitera
     value delimResult = delim(input);
     if (is Error<DelimLiteral, InputElement> delimResult)
     {
-        return addMessage<DelimLiteral, InputElement>("Missing starting delimeter in enclosing parse.")(delimResult);
+        return delimResult.appendMessage("Missing starting delimeter in enclosing parse.");
     }
     assert(is Ok<DelimLiteral, InputElement> delimResult);
 
@@ -78,7 +78,7 @@ Ok<[InputElement, InnerLiteral[], InputElement], InputElement>|Error<InputElemen
     value delimResult = delimP(input);
     if (is Error<InputElement, InputElement> delimResult)
     {
-        return addMessage<InputElement, InputElement>("Missing starting delimeter in enclosing parse.")(delimResult);
+        return delimResult.appendMessage("Missing starting delimeter in enclosing parse.");
     }
     assert(is Ok<InputElement, InputElement> delimResult);
 

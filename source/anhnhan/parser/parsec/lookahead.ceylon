@@ -12,7 +12,7 @@ ParseResult<Literal[], InputElement> lookahead<Literal, InputElement>(Parser<Lit
         => parser(input).bind(
                 (_ok) => ok([], input),
                 // Converting error since type has to fit
-                (error) => toJustError(error)
+                (error) => error.toJustError
             );
 
 shared

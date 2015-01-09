@@ -30,12 +30,12 @@ ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, Secon
         }
         case (is Error<SecondLiteral, InputElement>)
         {
-            return toJustError(secondR);
+            return secondR.toJustError;
         }
     }
     case (is Error<FirstLiteral, InputElement>)
     {
-        return toJustError(firstR);
+        return firstR.toJustError;
     }
 }
 

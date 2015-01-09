@@ -27,6 +27,6 @@ ParseResult<Return, InputElement> applyR<Literal, InputElement, Return>(ParseRes
     }
     case (is Error<Literal, InputElement>)
     {
-        return addMessage<Return, InputElement>("Consequence: Did not apply function.")(toJustError(_result));
+        return _result.toJustError.appendMessage("Consequence: Did not apply function.");
     }
 }

@@ -123,53 +123,48 @@ interface Error<out Result, out InputElement>
 {
     shared formal
     String[] messages;
+
+    "Appends the given error message(s) at the end of the error."
+    shared default
+    Error<Result, InputElement> appendMessage(String[]|String messages)
+    {
+        value error = this;
+        String[] _messages;
+        switch (messages)
+        case (is String)
+        {
+            _messages = [messages];
+        }
+        case (is String[])
+        {
+            _messages = messages;
+        }
+        value newMessages = error.messages.append(_messages);
+        value parseRest = error.rest;
+
+        switch (error)
+        case (is JustError<Result, InputElement>)
+        {
+            return JustError(parseRest, newMessages);
+        }
+        case (is ExpectedLiteral<Result, InputElement>)
+        {
+            return ExpectedLiteral<Result, InputElement>(error.expected, error.instead, parseRest, newMessages);
+        }
+        case (is PointOutTheError<Result, InputElement>)
+        {
+            return PointOutTheError(error.beforeError, parseRest, newMessages);
+        }
+        case (is MultitudeOfErrors<Result, InputElement>)
+        {
+            return MultitudeOfErrors(error.errors, newMessages);
+        }
+    }
+
+    shared default
+    JustError<Nothing, InputElement> toJustError
+            => JustError(this.rest, this.messages);
 }
-
-"Appends the given error message(s) at the end of the error."
-shared
-Error<Result, InputElement> addMessage<Result, InputElement>(String[]|String messages)(Error<Result, InputElement> error)
-        given Result satisfies Object
-{
-    String[] _messages;
-    switch (messages)
-    case (is String)
-    {
-        _messages = [messages];
-    }
-    case (is String[])
-    {
-        _messages = messages;
-    }
-    value newMessages = error.messages.append(_messages);
-    value parseRest = error.rest;
-
-    switch (error)
-    case (is JustError<Result, InputElement>)
-    {
-        return JustError(parseRest, newMessages);
-    }
-    case (is ExpectedLiteral<Result, InputElement>)
-    {
-        return ExpectedLiteral<Result, InputElement>(error.expected, error.instead, parseRest, newMessages);
-    }
-    case (is PointOutTheError<Result, InputElement>)
-    {
-        return PointOutTheError(error.beforeError, parseRest, newMessages);
-    }
-    case (is MultitudeOfErrors<Result, InputElement>)
-    {
-        return MultitudeOfErrors(error.errors, newMessages);
-    }
-}
-
-shared
-Error<Result, InputElement> addMessage2<Result, InputElement>(Error<Result, InputElement> error)(String[]|String messages)
-        given Result satisfies Object
-        => addMessage<Result, InputElement>(messages)(error);
-
-shared
-JustError<Nothing, InputElement> toJustError<InputElement>(Error<Object, InputElement> error)
-        => JustError(error.rest, error.messages);
 
 shared final
 class JustError<out Result, out InputElement>(rest, messages = [])
