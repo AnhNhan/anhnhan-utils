@@ -6,19 +6,20 @@
     Software provided as-is, no warranty
  */
 
+""
 shared
-ParseResult<Anything[], InputElement> skip<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
+ParseResult<[], InputElement> skip<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
-        => bind<Literal, InputElement, [[], {InputElement*}], Error<Anything[], InputElement>> {
-                (Ok<Literal, InputElement> _ok) => ok([], rest(_ok));
-                (Error<Literal, InputElement> error) => JustError(input, ["Could not skip."]);
-            } (parser(input));
+        => parser(input).bind {
+                (_ok) => ok([], _ok.rest);
+                (error) => JustError(input, ["Could not skip."]);
+            };
 
-"Aka skippable. To skip or not to skip."
+"Aka skippable, or skipIgnore."
 shared
-ParseResult<Anything[], InputElement> skipIgnore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
+ParseResult<[], InputElement> ignore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
-        => bind<Literal, InputElement, [[], {InputElement*}], [Anything[], {InputElement*}]> {
-                (_ok) => ok([], rest(_ok));
-                (error) => ok([], input);
-            } (parser(input));
+        => parser(input).bind {
+                (_ok) => ok([], _ok.rest);
+                (_) => ok([], input);
+            };

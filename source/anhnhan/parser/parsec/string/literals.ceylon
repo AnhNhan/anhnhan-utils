@@ -11,22 +11,27 @@ import anhnhan.parser.parsec {
     skipLiteral,
     skip,
     satisfy,
-    Parser
+    Parser,
+    zeroOrMore,
+    ignore
 }
 
 shared
 StringParser newline
         = literal('\n');
 shared
-Parser<Anything[], Character> skipNewline
+Parser<Character[], Character> skipNewline
         = skipLiteral('\n');
 
 shared
 StringParser whitespace
         = satisfy(Character.whitespace);
 shared
-Parser<Anything[], Character> skipWhitespace
+Parser<[], Character> skipWhitespace
         = skip(whitespace);
+shared
+Parser<[], Character> ignoreWhitespace
+        = ignore(zeroOrMore(whitespace));
 
 shared
 StringParser tab

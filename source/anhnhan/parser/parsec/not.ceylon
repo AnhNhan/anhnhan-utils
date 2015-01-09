@@ -9,7 +9,7 @@
 shared
 ParseResult<Anything[], InputElement> not<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
-        => bind {
-                (Anything ok) => JustError(input);
-                (Error<Literal, InputElement> error) => ok([], rest(error));
-            } (parser(input));
+        => parser(input).bind {
+                (ok) => JustError(input);
+                (error) => ok([], error.rest);
+            };

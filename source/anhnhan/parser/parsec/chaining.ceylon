@@ -10,6 +10,7 @@ import ceylon.collection {
     LinkedList
 }
 
+shared
 ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, SecondLiteral, InputElement>(firstP, secondP)({InputElement*} input)
         given FirstLiteral satisfies Object
         given SecondLiteral satisfies Object
@@ -21,11 +22,11 @@ ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, Secon
     switch (firstR)
     case (is Ok<FirstLiteral, InputElement>)
     {
-        value secondR = secondP(rest(firstR));
+        value secondR = secondP(firstR.rest);
         switch (secondR)
         case (is Ok<SecondLiteral, InputElement>)
         {
-            return ok([result(firstR), result(secondR)], rest(secondR));
+            return ok([firstR.result, secondR.result], secondR.rest);
         }
         case (is Error<SecondLiteral, InputElement>)
         {
@@ -38,6 +39,7 @@ ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, Secon
     }
 }
 
+shared
 ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({InputElement*} input)
         given Literal satisfies Object
 {
@@ -50,12 +52,12 @@ ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({I
         value _result = parser(_input);
         if (is Ok<Literal, InputElement> _result)
         {
-            _input = rest(_result);
-            results.add(result(_result));
+            _input = _result.rest;
+            results.add(_result.result);
         }
         else
         {
-            return PointOutTheError(input.take(rest(_result).size), rest(_result));
+            return PointOutTheError(input.take(_result.rest.size), _result.rest);
         }
     }
 
@@ -72,8 +74,8 @@ Ok<Literal[], InputElement> zeroOrMore<Literal, InputElement>(Parser<Literal, In
 
     while (is Ok<Literal, InputElement> _result = parser(_input))
     {
-        results.add(result(_result));
-        _input = rest(_result);
+        results.add(_result.result);
+        _input = _result.rest;
     }
 
     // TODO: Filter out [] instances coming from skip
@@ -86,9 +88,9 @@ ParseResult<[Literal+], InputElement> oneOrMore<Literal, InputElement>(Parser<Li
         given Literal satisfies Object
 {
     value results = zeroOrMore<Literal, InputElement>(parser)(str);
-    if (nonempty literal = result(results))
+    if (nonempty literal = results.result)
     {
-        return ok(literal, rest(results));
+        return ok(literal, results.rest);
     }
     else
     {

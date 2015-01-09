@@ -30,7 +30,7 @@ ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLit
     assert(is Error<FirstLiteral, InputElement> firstR);
     assert(is Error<SecondLiteral, InputElement> secondR);
 
-    return MultitudeOfErrors([firstR, secondR]);
+    return MultitudeOfErrors([firstR, secondR], ["Neither of these matched."]);
 }
 
 shared
@@ -57,3 +57,8 @@ ParseResult<Literal, InputElement> anyOf<Literal, InputElement>(Parser<Literal, 
     assert(nonempty _errors = errors);
     return MultitudeOfErrors(_errors);
 }
+
+shared
+ParseResult<[Literal+], InputElement> manyOf<Literal, InputElement>(Parser<Literal, InputElement>+ parsers)({InputElement*} input)
+        given Literal satisfies Object
+        => oneOrMore(anyOf(*parsers))(input);

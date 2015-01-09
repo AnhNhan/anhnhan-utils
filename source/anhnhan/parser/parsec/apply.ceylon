@@ -12,7 +12,7 @@ ParseResult<Return, InputElement> apply<Literal, InputElement, Return>(Parser<Li
         given Return satisfies Object
 {
     value _result = parser(input);
-    return applyR<Literal, InputElement, Return>(_result, fun);
+    return applyR(_result, fun);
 }
 
 shared
@@ -23,7 +23,7 @@ ParseResult<Return, InputElement> applyR<Literal, InputElement, Return>(ParseRes
     switch (_result)
     case (is Ok<Literal, InputElement>)
     {
-        return ok(fun(result(_result)), rest(_result));
+        return ok(fun(_result.result), _result.rest);
     }
     case (is Error<Literal, InputElement>)
     {

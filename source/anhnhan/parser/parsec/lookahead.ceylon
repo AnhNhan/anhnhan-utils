@@ -9,17 +9,17 @@
 shared
 ParseResult<Literal[], InputElement> lookahead<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
-        => bind<Literal, InputElement, [Literal[], {InputElement*}], Error<Literal[], InputElement>>(
+        => parser(input).bind(
                 (_ok) => ok([], input),
                 // Converting error since type has to fit
                 (error) => toJustError(error)
-            )(parser(input));
+            );
 
 shared
 ParseResult<Literal[], InputElement> negativeLookahead<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
-        => bind<Literal, InputElement, Error<Literal[], InputElement>, [Literal[], {InputElement*}]>(
+        => parser(input).bind(
                 (_ok) => JustError(input, ["Negative lookahead did match."]),
                 // Converting error since type has to fit
                 (error) => ok([], input)
-            )(parser(input));
+            );

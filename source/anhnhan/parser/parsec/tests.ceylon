@@ -21,16 +21,16 @@ test
 void test0001()
 {
     value str1 = "a b c d";
-    value parser1 = sequence<Character|Anything[], Character>(literal('a'), skipWhitespace, skip(literal('b')), literal(' '));
+    value parser1 = sequence(literal('a'), skipWhitespace, skip(literal('b')), literal(' '));
 
     value result1 = parser1(str1);
     assertEquals(result1, ok(['a', [], [], ' '], "c d"));
 
-    value filtered1 = filterEmpty<Character|Anything[], Character>(result1);
-    bind<Character|Anything[], Character, Anything, Anything> {
-        (Ok<Character|Anything[], Character> ok) => assertEquals(result(ok), ['a', ' ']);
-        (Anything error) => fail();
-    } (filtered1);
+    value filtered1 = filterEmpty(result1);
+    filtered1.bind {
+        (ok) => assertEquals(ok.result, ['a', ' ']);
+        (error) => fail();
+    };
 }
 
 test
@@ -40,9 +40,9 @@ void test0002()
     value str = ['a'];
     value ints = [a_int];
     value charParser = literal('a');
-    value intParser = literal<Integer>(a_int);
+    value intParser = literal(a_int);
 
-    value result1 = apply<Character, Character, Integer>(charParser, Character.integer)(str);
+    value result1 = apply(charParser, Character.integer)(str);
     value result2 = intParser(ints);
 
     assertEquals(result1, result2);
@@ -52,8 +52,8 @@ test
 void test0003()
 {
     value str = "foo";
-    value _parse = or<Character, Character, Character>(literal('f'), literal('o'));
-    value parse = oneOrMore<Character, Character>(_parse);
+    value _parse = or(literal('f'), literal('o'));
+    value parse = oneOrMore(_parse);
 
     assertEquals(parse(str), ok(['f', 'o', 'o'], ""));
 }
@@ -62,9 +62,9 @@ test
 void test0004()
 {
     value str = "abc";
-    value parse = and<Character, [Character, Character], Character>(
+    value parse = and(
         literal('a'),
-        and<Character, Character, Character>(
+        and(
             literal('b'),
             literal('c')
         )
@@ -77,25 +77,25 @@ test
 void test0005()
 {
     value str1 = "abc def\n";
-    value parse = sequence<Character[], Character>(manySatisfy(Character.letter), lookahead<Character, Character>(satisfy(Character.whitespace)));
+    value parse = sequence(manySatisfy(Character.letter), lookahead(satisfy(Character.whitespace)));
 
     value pass1 = parse(str1);
     assert(is Ok<Character[][], Character> pass1);
     assertEquals(pass1, ok([['a', 'b', 'c'], []], " def\n"));
 
-    value str2 = rest(whitespace(rest(pass1)));
+    value str2 = whitespace(pass1.rest).rest;
     value pass2 = parse(str2);
     assert(is Ok<Character[][], Character> pass2);
     assertEquals(pass2, ok([['d', 'e', 'f'], []], "\n"));
 
-    value str3 = rest(pass2);
-    value pass3 = negativeLookahead<Character, Character>(whitespace)(str3);
+    value str3 = pass2.rest;
+    value pass3 = negativeLookahead(whitespace)(str3);
     assert(is Error<Character[], Character> pass3);
-    assertEquals(rest(pass3), "\n");
+    assertEquals(pass3.rest, "\n");
 
-    value pass4 = lookahead<Character, Character>(whitespace)(str3);
+    value pass4 = lookahead(whitespace)(str3);
     assert(is Ok<Character[], Character> pass4);
-    assertEquals(rest(pass4), "\n");
+    assertEquals(pass4.rest, str3);
 }
 
 test
@@ -104,13 +104,13 @@ void test0006()
     assert(nonempty fooStr = "foo".sequence());
     value fooP = literals(fooStr);
     value str1 = "foo    foo-foo";
-    value parse1 = sequence<Character[], Character>(fooP, manySatisfy(Character.whitespace), fooP);
+    value parse1 = sequence(fooP, manySatisfy(Character.whitespace), fooP);
 
     value result1 = fooP(str1);
     assert(is Ok<Character[], Character> result1);
-    assertEquals(result(result1), ['f', 'o', 'o']);
+    assertEquals(result1.result, ['f', 'o', 'o']);
 
     value result2 = parse1(str1);
     assert(is Ok<Character[][], Character> result2);
-    assertEquals(result(result2), [['f', 'o', 'o'], [' ', ' ', ' ', ' '], ['f', 'o', 'o']]);
+    assertEquals(result2.result, [['f', 'o', 'o'], [' ', ' ', ' ', ' '], ['f', 'o', 'o']]);
 }

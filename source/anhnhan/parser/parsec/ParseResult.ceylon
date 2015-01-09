@@ -7,82 +7,111 @@
  */
 
 shared
-alias ParseResult<Result, InputElement>
-        given Result satisfies Object
-        => Ok<Result, InputElement>
-            | Error<Result, InputElement>;
-
-// Why can't this be a class alias?
-shared
-alias Ok<out Result, out InputElement>
-        => [Result, {InputElement*}];
-
-shared
 interface Parser<out Result, InputElement>
-        given Result satisfies Object
         => ParseResult<Result, InputElement>({InputElement*});
 
-"Use this function if you want to look cool constructing tuples."
 shared
-Ok<Result, InputElement> ok<Result, InputElement>(Result result, {InputElement*} rest)
-    => [result, rest];
-"Use this function if you don't remember at which index the result is located."
-shared
-Result result<Result>(Ok<Result, Anything> tup)
-    => tup[0];
-"Use this function if you don't remember at which index the rest of the input is located."
-shared
-{InputElement*} rest<InputElement>(ParseResult<Object, InputElement> input)
+interface ParseResult<out Result, out InputElement>
+        of Ok<Result, InputElement>
+            | Error<Result, InputElement>
 {
-    switch (input)
-    case (is Ok<Object, InputElement>)
+    "The remainder of the input, "
+    shared formal
+    {InputElement*} rest;
+
+    shared default
+    ReturnOk|ReturnError bind<ReturnOk, ReturnError>(onOk, onError)
     {
-        return input[1];
+        ReturnOk(Ok<Result, InputElement>) onOk;
+        ReturnError(Error<Result, InputElement>) onError;
+
+        value self = this;
+        switch (self)
+        case (is Ok<Result, InputElement>)
+        {
+            return onOk(self);
+        }
+        case (is Error<Result, InputElement>)
+        {
+            return onError(self);
+        }
     }
-    case (is Error<Object, InputElement>)
-    {
-        return input.parseRest;
-    }
+
+    shared default
+    ReturnOk|Error<Result, InputElement> bindOk<ReturnOk>(ReturnOk(Ok<Result, InputElement>) onOk)
+            => bind<ReturnOk, Error<Result, InputElement>>(onOk, identity<Error<Result, InputElement>>);
 }
 
 shared
-ReturnOk|ReturnError bind<Result, InputElement, ReturnOk, ReturnError>(ok, error)(ParseResult<Result, InputElement> input)
-        given Result satisfies Object
+interface Ok<out Result, out InputElement>
+        satisfies ParseResult<Result, InputElement>
 {
-    ReturnOk(Ok<Result, InputElement>) ok;
-    ReturnError(Error<Result, InputElement>) error;
+    shared formal
+    Result result;
 
-    switch (input)
-    case (is Ok<Result, InputElement>)
+    string => "Ok(``result else "<end of input>"``, ``rest``)";
+}
+
+shared final
+class OkImpl<out Result, out InputElement>(result, rest)
+        extends Object()
+        satisfies Ok<Result, InputElement>
+{
+    shared actual
+    Result result;
+
+    shared actual
+    {InputElement*} rest;
+
+    shared actual Boolean equals(Object that)
     {
-        return ok(input);
+        if (is OkImpl<Anything, Anything> that)
+        {
+            Boolean result_same;
+
+            if (exists result)
+            {
+                if (exists t_result = that.result)
+                {
+                    result_same = result == t_result;
+                }
+                else
+                {
+                    result_same = false;
+                }
+            }
+            else
+            {
+                if (exists t_result = that.result)
+                {
+                    result_same = false;
+                }
+                else
+                {
+                    result_same = true;
+                }
+            }
+
+            return result_same &&
+                rest==that.rest;
+        }
+        else {
+            return false;
+        }
     }
-    case (is Error<Result, InputElement>)
-    {
-        return error(input);
+
+    shared actual Integer hash {
+        variable value hash = 1;
+        hash = 31*hash + (result else 1).hash;
+        hash = 31*hash + rest.hash;
+        return hash;
     }
+
 }
 
 shared
-ReturnOk|Error<Result, InputElement> bindOk<Result, InputElement, ReturnOk>(ReturnOk(Ok<Result, InputElement>) ok)(ParseResult<Result, InputElement> input)
-        given Result satisfies Object
-        given ReturnOk satisfies [Object, {InputElement*}]
-        => bind<Result, InputElement, ReturnOk, Error<Result, InputElement>>(ok, identity<Error<Result, InputElement>>)(input);
-
-shared
-Boolean isEmptyResult<Result, InputElement>(Ok<Result, InputElement> input)
-        given Result satisfies Object
-{
-    value _result = result(input);
-    if (is Anything[] _result)
-    {
-        return _result == [];
-    }
-    else
-    {
-        return false;
-    }
-}
+Ok<Result, InputElement> ok<out Result, out InputElement>(Result result, {InputElement*} rest)
+        => OkImpl(result, rest);
 
 shared
 interface Error<out Result, out InputElement>
@@ -90,11 +119,8 @@ interface Error<out Result, out InputElement>
             | JustError<Result, InputElement>
             | PointOutTheError<Result, InputElement>
             | MultitudeOfErrors<Result, InputElement>
-        given Result satisfies Object
+        satisfies ParseResult<Result, InputElement>
 {
-    shared formal
-    {InputElement*} parseRest;
-
     shared formal
     String[] messages;
 }
@@ -115,7 +141,7 @@ Error<Result, InputElement> addMessage<Result, InputElement>(String[]|String mes
         _messages = messages;
     }
     value newMessages = error.messages.append(_messages);
-    value parseRest = error.parseRest;
+    value parseRest = error.rest;
 
     switch (error)
     case (is JustError<Result, InputElement>)
@@ -143,19 +169,22 @@ Error<Result, InputElement> addMessage2<Result, InputElement>(Error<Result, Inpu
 
 shared
 JustError<Nothing, InputElement> toJustError<InputElement>(Error<Object, InputElement> error)
-        => JustError(error.parseRest, error.messages);
+        => JustError(error.rest, error.messages);
 
 shared final
-class JustError<out Result, out InputElement>(parseRest, messages = [])
+class JustError<out Result, out InputElement>(rest, messages = [])
         extends Object()
         satisfies Error<Result, InputElement>
-        given Result satisfies Object
 {
     shared actual
-    {InputElement*} parseRest;
+    {InputElement*} rest;
+
+    shared actual
+    String[] messages;
+
     shared actual Boolean equals(Object that) {
         if (is JustError<Result, InputElement> that) {
-            return parseRest==that.parseRest;
+            return rest==that.rest;
         }
         else {
             return false;
@@ -164,18 +193,15 @@ class JustError<out Result, out InputElement>(parseRest, messages = [])
 
     shared actual Integer hash {
         variable value hash = 1;
-        hash = 31*hash + parseRest.hash;
+        hash = 31*hash + rest.hash;
         return hash;
     }
-
-    shared actual String[] messages;
 }
 
 shared final
-class ExpectedLiteral<out Result, out InputElement>(Result|{Result*} _expected, instead, parseRest, messages = [])
+class ExpectedLiteral<out Result, out InputElement>(Result|{Result*} _expected, instead, rest, messages = [])
         extends Object()
         satisfies Error<Result, InputElement>
-        given Result satisfies Object
 {
     shared
     {Result*} expected;
@@ -195,15 +221,18 @@ class ExpectedLiteral<out Result, out InputElement>(Result|{Result*} _expected, 
     Result? instead;
 
     shared actual
-    {InputElement*} parseRest;
+    {InputElement*} rest;
 
-    string = "ExpectedLiteral(expected = '``expected``', instead = '``instead else "<null>"``', rest = '``parseRest``', messages=``messages``)";
+    shared actual
+    String[] messages;
+
+    string = "ExpectedLiteral(expected = '``expected``', instead = '``instead else "<null>"``', rest = '``rest``', messages=``messages``)";
 
     shared actual Boolean equals(Object that) {
         if (is ExpectedLiteral<Result, InputElement> that) {
             // Skipping instead is sensible, considering it is only for helping
             return expected==that.expected &&
-                parseRest==that.parseRest;
+                rest==that.rest;
         }
         else {
             return false;
@@ -213,33 +242,30 @@ class ExpectedLiteral<out Result, out InputElement>(Result|{Result*} _expected, 
     shared actual Integer hash {
         variable value hash = 1;
         hash = 31*hash + expected.hash;
-        hash = 31*hash + parseRest.hash;
+        hash = 31*hash + rest.hash;
         if (exists instead)
         {
             hash = 31*hash + instead.hash;
         }
         return hash;
     }
-
-    shared actual String[] messages;
 }
 
 shared final
-class PointOutTheError<out Result, out InputElement>(beforeError, parseRest, messages = [])
+class PointOutTheError<out Result, out InputElement>(beforeError, rest, messages = [])
         extends Object()
         satisfies Error<Result, InputElement>
-        given Result satisfies Object
 {
     shared
     {InputElement*} beforeError;
 
     shared actual
-    {InputElement*} parseRest;
+    {InputElement*} rest;
 
     shared actual Boolean equals(Object that) {
         if (is PointOutTheError<Result, InputElement> that) {
             return beforeError==that.beforeError &&
-                parseRest==that.parseRest;
+                rest==that.rest;
         }
         else {
             return false;
@@ -249,28 +275,32 @@ class PointOutTheError<out Result, out InputElement>(beforeError, parseRest, mes
     shared actual Integer hash {
         variable value hash = 1;
         hash = 31*hash + beforeError.hash;
-        hash = 31*hash + parseRest.hash;
+        hash = 31*hash + rest.hash;
         return hash;
     }
 
     shared actual String[] messages;
 
-    string = "PointOutTheError(beforeError=``beforeError``, parseRest=``parseRest``, messages=``messages``)";
+    string = "PointOutTheError(beforeError=``beforeError``, parseRest=``rest``, messages=``messages``)";
 }
 
 shared final
 class MultitudeOfErrors<out Result, out InputElement>(errors, String[] _messages = [])
         extends Object()
         satisfies Error<Result, InputElement>
-        given Result satisfies Object
 {
     shared
     [Error<Result, InputElement>+] errors;
 
     shared actual String[] messages
-            = errors*.messages.append([_messages]).reduce(uncurry(Sequential<String>.append<String>));
+            = errors*.messages
+                .append([_messages])
+                .reduce(uncurry(Sequential<String>.append<String>));
 
-    shared actual {InputElement*} parseRest = errors.max((Error<Result,InputElement> x, Error<Result,InputElement> y) => x.messages.size <=> y.messages.size).parseRest;
+    shared actual {InputElement*} rest
+            = errors.max((x, y) => x.messages.size <=> y.messages.size).rest;
+
+    string => "MultitudeOfErrors(``errors``, ``_messages``)";
 
     shared actual Boolean equals(Object that) {
         if (is MultitudeOfErrors<Result, InputElement> that) {

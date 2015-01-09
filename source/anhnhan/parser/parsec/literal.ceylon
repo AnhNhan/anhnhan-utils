@@ -21,7 +21,7 @@ ParseResult<Literal, Literal> literal<Literal>(Literal atom)({Literal*} str)
 {
     if (exists first = str.first, first == atom)
     {
-        return [first, str.rest];
+        return ok(first, str.rest);
     }
 
     return ExpectedLiteral(atom, str.first, str, ["Expected '``atom``', but got '``str.first else "<end of input>"``'"]);
@@ -45,11 +45,12 @@ void testLiteral()
 }
 
 shared
-ParseResult<Literal[], Literal> literals<Literal>([Literal+] literals, Integer insteadTakeExtra = 5)({Literal*} input)
+ParseResult<Literal[], Literal> literals<Literal>(List<Literal> literals, Integer insteadTakeExtra = 5)({Literal*} input)
         given Literal satisfies Object
 {
+    value sequence = literals.sequence();
     value str = input.take(literals.size);
-    value error = addMessage2(ExpectedLiteral<Literal[], Literal>(literals, input.take(literals.size + insteadTakeExtra).sequence(), input));
+    value error = addMessage2(ExpectedLiteral<Literal[], Literal>(sequence, input.take(literals.size + insteadTakeExtra).sequence(), input));
 
     if (str.size.smallerThan(literals.size))
     {
@@ -58,34 +59,34 @@ ParseResult<Literal[], Literal> literals<Literal>([Literal+] literals, Integer i
 
     if (!literals.startsWith(LinkedList(str)))
     {
-        return error("Input does not match");
+        return error("Input does not match.");
     }
 
-    return ok(literals, input.skip(literals.size));
+    return ok(sequence, input.skip(literals.size));
 }
 
 "Optimized version for skipping a single literal."
 shared
-ParseResult<Anything[], Literal> skipLiteral<Literal>(Literal atom)({Literal*} str)
+ParseResult<Literal[], Literal> skipLiteral<Literal>(Literal atom)({Literal*} str)
         given Literal satisfies Object
 {
     value first = str.first;
     if (exists first, first == atom)
     {
-        return [[], str.rest];
+        return ok([], str.rest);
     }
 
-    [Literal]|[] instead;
+    [Literal]? instead;
     if (exists first)
     {
         instead = [first];
     }
     else
     {
-        instead = [];
+        instead = null;
     }
 
-    return ExpectedLiteral<Literal[], Literal>([atom], instead, str, ["Can't skip single literal. Expected '``atom``', but got '``instead.first else "<end of input>"``'"]);
+    return ExpectedLiteral<Literal[], Literal>([atom], instead, str, ["Can't skip single literal. Expected '``atom``', but got '``instead else "<end of input>"``'"]);
 }
 
 test
@@ -159,8 +160,8 @@ ParseResult<[InputElement+], InputElement> manySatisfy<InputElement>(Boolean(Inp
 
     while (is Ok<InputElement, InputElement> __result = _result)
     {
-        _input = rest(__result);
-        list.add(result(__result));
+        _input = __result.rest;
+        list.add(__result.result);
         _result = satisfyF(_input);
     }
 

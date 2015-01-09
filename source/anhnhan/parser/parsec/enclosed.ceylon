@@ -32,16 +32,16 @@ Ok<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement>|Error<DelimLitera
     }
     assert(is Ok<DelimLiteral, InputElement> delimResult);
 
-    value inners = zeroOrMore<InnerLiteral, InputElement>(inner)(rest(delimResult));
+    value inners = zeroOrMore(inner)(delimResult.rest);
 
-    value delimRightResult = delimRight(rest(inners));
+    value delimRightResult = delimRight(inners.rest);
     if (is Error<DelimLiteral, InputElement> delimRightResult)
     {
-        return MultitudeOfErrors([delimRightResult, PointOutTheError(input.take(input.size - rest(delimRightResult).size), rest(delimRightResult))], ["Missing ending delimeter in enclosing parse."]);
+        return MultitudeOfErrors([delimRightResult, PointOutTheError(input.take(input.size - delimRightResult.rest.size), delimRightResult.rest)], ["Missing ending delimeter in enclosing parse."]);
     }
     assert(is Ok<DelimLiteral, InputElement> delimRightResult);
 
-    return ok([result(delimResult), result(inners), result(delimRightResult)], rest(delimRightResult));
+    return ok([delimResult.result, inners.result, delimRightResult.result], delimRightResult.rest);
 }
 
 test
@@ -51,9 +51,9 @@ void testEnclosedBy()
     value input2 = {0, 9, 1, 2, 3, 0, 9};
     value input3 = {0, 9, 1, 2, 3, 9, 0};
 
-    value parse1 = enclosedBy<Character[], Character, Character>(and<Character, Character, Character>(literal('('), literal(')')), letter);
-    value parse2 = enclosedBy<Integer[], Integer, Integer>(and<Integer, Integer, Integer>(literal(0), literal(9)), satisfy<Integer>((x) => x in [1, 2, 3]));
-    value parse3 = enclosedBy<Integer[], Integer, Integer>(and<Integer, Integer, Integer>(literal(0), literal(9)), satisfy<Integer>((x) => x in [1, 2, 3]), and<Integer, Integer, Integer>(literal(9), literal(0)));
+    value parse1 = enclosedBy(and(literal('('), literal(')')), letter);
+    value parse2 = enclosedBy(and(literal(0), literal(9)), satisfy((Integer x) => x in [1, 2, 3]));
+    value parse3 = enclosedBy(and(literal(0), literal(9)), satisfy((Integer x) => x in [1, 2, 3]), and(literal(9), literal(0)));
 
     assert(is Ok<Character[][], Character> result1 = parse1(input1));
     assert(is Ok<Integer[][], Integer> result2 = parse2(input2));
@@ -82,16 +82,16 @@ Ok<[InputElement, InnerLiteral[], InputElement], InputElement>|Error<InputElemen
     }
     assert(is Ok<InputElement, InputElement> delimResult);
 
-    value inners = zeroOrMore<InnerLiteral, InputElement>(inner)(rest(delimResult));
+    value inners = zeroOrMore(inner)(delimResult.rest);
 
-    value delimRightResult = delimRP(rest(inners));
+    value delimRightResult = delimRP(inners.rest);
     if (is Error<InputElement, InputElement> delimRightResult)
     {
-        return MultitudeOfErrors([delimRightResult, PointOutTheError(input.take(input.size - rest(delimRightResult).size), rest(delimRightResult))], ["Missing ending delimeter in enclosing parse."]);
+        return MultitudeOfErrors([delimRightResult, PointOutTheError(input.take(input.size - delimRightResult.rest.size), delimRightResult.rest)], ["Missing ending delimeter in enclosing parse."]);
     }
     assert(is Ok<InputElement, InputElement> delimRightResult);
 
-    return ok([result(delimResult), result(inners), result(delimRightResult)], rest(delimRightResult));
+    return ok([delimResult.result, inners.result, delimRightResult.result], delimRightResult.rest);
 }
 
 test
@@ -99,7 +99,7 @@ void testEnclosedByLiteral()
 {
     value input1_1 = "(abc)";
     value input1_2 = "(a,b)";
-    value parse1 = enclosedByLiteral<Character, Character>('(', letter, ')');
+    value parse1 = enclosedByLiteral('(', letter, ')');
 
     assertEquals(parse1(input1_1), ok(['(', ['a', 'b', 'c'], ')'], ""));
 
