@@ -16,25 +16,13 @@ ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, Secon
     Parser<FirstLiteral, InputElement> firstP;
     Parser<SecondLiteral, InputElement> secondP;
 
-    value firstR = firstP(input);
-    switch (firstR)
-    case (is Ok<FirstLiteral, InputElement>)
-    {
-        value secondR = secondP(firstR.rest);
-        switch (secondR)
-        case (is Ok<SecondLiteral, InputElement>)
-        {
-            return ok([firstR.result, secondR.result], secondR.rest);
-        }
-        case (is Error<SecondLiteral, InputElement>)
-        {
-            return secondR.toJustError;
-        }
-    }
-    case (is Error<FirstLiteral, InputElement>)
-    {
-        return firstR.toJustError;
-    }
+    return firstP(input).bind {
+        (firstR) => secondP(firstR.rest).bind {
+            (secondR) => ok([firstR.result, secondR.result], secondR.rest);
+            (error) => error.toJustError;
+        };
+        (error) => error.toJustError;
+    };
 }
 
 shared

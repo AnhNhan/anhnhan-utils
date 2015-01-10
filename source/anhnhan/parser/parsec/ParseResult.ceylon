@@ -40,6 +40,10 @@ interface ParseResult<out Result, out InputElement>
     shared default
     ReturnOk|Error<Result, InputElement> bindOk<ReturnOk>(ReturnOk(Ok<Result, InputElement>) onOk)
             => bind<ReturnOk, Error<Result, InputElement>>(onOk, identity<Error<Result, InputElement>>);
+
+    shared default
+    Ok<Result, InputElement>|ReturnError bindError<ReturnError>(ReturnError(Error<Result, InputElement>) onError)
+            => bind<Ok<Result, InputElement>, ReturnError>(identity<Ok<Result, InputElement>>, onError);
 }
 
 shared

@@ -8,8 +8,6 @@
 
 shared
 ParseResult<Return, InputElement> apply<Literal, InputElement, Return>(Parser<Literal, InputElement> parser, Return(Literal) fun)({InputElement*} input)
-        given Literal satisfies Object
-        given Return satisfies Object
 {
     value _result = parser(input);
     return applyR(_result, fun);
@@ -17,8 +15,6 @@ ParseResult<Return, InputElement> apply<Literal, InputElement, Return>(Parser<Li
 
 shared
 ParseResult<Return, InputElement> applyR<Literal, InputElement, Return>(ParseResult<Literal, InputElement> _result, Return(Literal) fun)
-        given Literal satisfies Object
-        given Return satisfies Object
 {
     switch (_result)
     case (is Ok<Literal, InputElement>)

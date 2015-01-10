@@ -8,8 +8,6 @@
 
 shared
 ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLiteral, InputElement>(firstP, secondP, label = "")({InputElement*} input)
-        given FirstLiteral satisfies Object
-        given SecondLiteral satisfies Object
 {
     Parser<FirstLiteral, InputElement> firstP;
     Parser<SecondLiteral, InputElement> secondP;
@@ -35,7 +33,6 @@ ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLit
 
 shared
 ParseResult<Literal, InputElement> anyOf<Literal, InputElement>(Parser<Literal, InputElement>+ parsers)({InputElement*} input)
-        given Literal satisfies Object
 {
     variable
     Error<Literal, InputElement>[] errors = [];
@@ -60,5 +57,4 @@ ParseResult<Literal, InputElement> anyOf<Literal, InputElement>(Parser<Literal, 
 
 shared
 ParseResult<[Literal+], InputElement> manyOf<Literal, InputElement>(Parser<Literal, InputElement>+ parsers)({InputElement*} input)
-        given Literal satisfies Object
         => oneOrMore(anyOf(*parsers))(input);

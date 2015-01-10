@@ -108,7 +108,7 @@ ParseResult<Literal, Literal> anyLiteral<Literal>({Literal*} str)
         return ok(nextLiteral, str.rest);
     }
 
-    return JustError(str);
+    return JustError(str, ["Encountered end of input. Expected anything but that."]);
 }
 
 // TODO: Consider U+FFFF as valid EOS, too?
@@ -135,7 +135,6 @@ void testEmpty()
 "Parses a single literal if a given [[predicate]] applies."
 shared
 ParseResult<InputElement, InputElement> satisfy<InputElement>(Boolean(InputElement) predicate, String label = "")({InputElement*} input)
-        given InputElement satisfies Object
 {
     if (exists nextLiteral = input.first, predicate(nextLiteral))
     {
@@ -148,7 +147,6 @@ ParseResult<InputElement, InputElement> satisfy<InputElement>(Boolean(InputEleme
 "At least one satisfied."
 shared
 ParseResult<[InputElement+], InputElement> manySatisfy<InputElement>(Boolean(InputElement) predicate, String label = "")({InputElement*} input)
-        given InputElement satisfies Object
 {
     value satisfyF = satisfy(predicate, label);
 

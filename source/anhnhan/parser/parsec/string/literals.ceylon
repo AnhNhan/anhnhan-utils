@@ -13,7 +13,10 @@ import anhnhan.parser.parsec {
     satisfy,
     Parser,
     zeroOrMore,
-    ignore
+    ignore,
+    literals,
+    negativeLookahead,
+    left
 }
 
 shared
@@ -68,3 +71,7 @@ StringParser digit
 shared
 StringParser hex
         = satisfy(isHex);
+
+shared
+Parser<Character[], Character>({Character*}) keyword
+        = ({Character*} keyword) => left(literals(String(keyword)), negativeLookahead(ignoreWhitespace));

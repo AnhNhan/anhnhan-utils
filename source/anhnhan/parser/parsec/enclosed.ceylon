@@ -18,8 +18,6 @@ import ceylon.test {
 "Similar to `between`, but also returns the delimeters."
 shared
 Ok<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement>|Error<DelimLiteral, InputElement> enclosedBy<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
-        given InnerLiteral satisfies Object
-        given DelimLiteral satisfies Object
 {
     Parser<DelimLiteral, InputElement> delim;
     Parser<InnerLiteral, InputElement> inner;
@@ -109,8 +107,6 @@ void testEnclosedByLiteral()
 "[[inner]] is possibly-empty."
 shared
 Ok<InnerLiteral[], InputElement>|Error<DelimLiteral, InputElement> between<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
-        given InnerLiteral satisfies Object
-        given DelimLiteral satisfies Object
 {
     Parser<DelimLiteral, InputElement> delim;
     Parser<InnerLiteral, InputElement> inner;
