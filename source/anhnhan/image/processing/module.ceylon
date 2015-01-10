@@ -10,4 +10,8 @@ module anhnhan.image.processing "dev"
 {
     shared
     import anhnhan.image.common "dev";
+
+    import ceylon.collection "1.1.0";
+    optional
+    import ceylon.test "1.1.0";
 }

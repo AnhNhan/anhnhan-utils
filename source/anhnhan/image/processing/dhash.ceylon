@@ -12,6 +12,12 @@ import anhnhan.image.common {
     RGB
 }
 
+import ceylon.test {
+    assertEquals,
+    test,
+    assertTrue
+}
+
 shared
 {Boolean*} dhash<Pixel, Image = View<Pixel>>(
     Integer(Pixel) convertToLuminosity,
@@ -83,4 +89,69 @@ Integer dhash_xor({Boolean*} _this, {Boolean*} _that)
     }
 
     return differences;
+}
+
+test
+void testXor()
+{
+    value val1 = {false, false, true, false, false};
+    value val2 = {false, true, false, false, false};
+    value val3 = {false, true, false, true, false};
+
+    assertEquals(dhash_xor(val1, val1), 0);
+    assertEquals(dhash_xor(val1, val2), 2);
+    assertEquals(dhash_xor(val2, val1), 2);
+    assertEquals(dhash_xor(val1, val3), 3);
+    assertEquals(dhash_xor(val3, val1), 3);
+    assertEquals(dhash_xor(val2, val3), 1);
+    assertEquals(dhash_xor(val3, val2), 1);
+}
+
+shared
+[[Boolean+]+] dhash_variants({Boolean*} _orig, Integer max_distance)
+{
+    assert(max_distance >= 0);
+    assert(nonempty orig = _orig.sequence());
+    if (max_distance == 0)
+    {
+        return [orig];
+    }
+
+    value dist1s = [for (index->bit in orig.indexed)
+        [!bit]
+            .prepend(index == 0 then [] else orig[0..index-1])
+            .append(orig.sublistFrom(index+1).sequence())
+    ];
+
+    return [for (d1 in dist1s.append([orig])) dhash_variants(d1, max_distance - 1)]
+        .reduce(([[Boolean+]+] partial, [[Boolean+]+] element) => partial.append(element));
+}
+
+test
+void testVariants()
+{
+    value val1 = [false, true, false];
+    value set1_d1 = [
+        [false, true, false],
+        [true, true, false],
+        [false, true, true],
+        [false, false, false]
+    ];
+
+    value d1 = dhash_variants(val1, 1);
+    assertTrue(d1.every((element) => element in set1_d1));
+    assertTrue(set1_d1.every((element) => element in d1));
+
+    value set1_d2 = [
+        [false, true, false],
+        [true, true, false],
+        [false, true, true],
+        [false, false, false],
+        [false, false, true],
+        [true, true, true],
+        [true, false, false]
+    ];
+    value d2 = dhash_variants(val1, 2);
+    assertTrue(d2.every((element) => element in set1_d2));
+    assertTrue(set1_d2.every((element) => element in d2));
 }
