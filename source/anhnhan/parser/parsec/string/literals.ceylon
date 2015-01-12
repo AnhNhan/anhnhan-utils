@@ -16,25 +16,29 @@ import anhnhan.parser.parsec {
     ignore,
     literals,
     negativeLookahead,
-    left
+    left,
+    ignoreSurrounding
 }
 
 shared
 StringParser newline
         = literal('\n');
 shared
-Parser<Character[], Character> skipNewline
+StringParser<Character[]> skipNewline
         = skipLiteral('\n');
 
 shared
 StringParser whitespace
         = satisfy(Character.whitespace);
 shared
-Parser<[], Character> skipWhitespace
+StringParser<[]> skipWhitespace
         = skip(whitespace);
 shared
-Parser<[], Character> ignoreWhitespace
+StringParser<[]> ignoreWhitespace
         = ignore(zeroOrMore(whitespace));
+shared
+StringParser<Literal> trimWhitespace<Literal>(Parser<Literal, Character> parser)
+        => ignoreSurrounding<Literal, Character>(zeroOrMore(whitespace))(parser);
 
 shared
 StringParser tab
@@ -73,5 +77,5 @@ StringParser hex
         = satisfy(isHex);
 
 shared
-Parser<Character[], Character>({Character*}) keyword
-        = ({Character*} keyword) => left(literals(String(keyword)), negativeLookahead(ignoreWhitespace));
+StringParser<Character[]> keyword({Character*} keyword)
+        => left(literals(String(keyword)), negativeLookahead(ignoreWhitespace));

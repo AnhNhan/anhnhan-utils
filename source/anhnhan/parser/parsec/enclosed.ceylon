@@ -10,6 +10,9 @@ import anhnhan.parser.parsec.string {
     letter
 }
 
+import ceylon.collection {
+    LinkedList
+}
 import ceylon.test {
     test,
     assertEquals
@@ -17,7 +20,7 @@ import ceylon.test {
 
 "Similar to `between`, but also returns the delimeters."
 shared
-Ok<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement>|Error<DelimLiteral, InputElement> enclosedBy<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
+ParseResult<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement> enclosedBy<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
 {
     Parser<DelimLiteral, InputElement> delim;
     Parser<InnerLiteral, InputElement> inner;
@@ -26,16 +29,33 @@ Ok<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement>|Error<DelimLitera
     value delimResult = delim(input);
     if (is Error<DelimLiteral, InputElement> delimResult)
     {
-        return delimResult.appendMessage("Missing starting delimeter in enclosing parse.");
+        return delimResult.toJustError.appendMessage("Missing starting delimeter in enclosing parse.");
     }
     assert(is Ok<DelimLiteral, InputElement> delimResult);
 
-    value inners = zeroOrMore(inner)(delimResult.rest);
+    value _inners = LinkedList<InnerLiteral>();
+    variable
+    value _input = delimResult.rest;
+    while (is Error<InnerLiteral, InputElement> nonDelimParse = delimRight(_input))
+    {
+        value innerR = inner(_input);
+        switch (innerR)
+        case (is Ok<InnerLiteral, InputElement>)
+        {
+            _input = innerR.rest;
+            _inners.add(innerR.result);
+        }
+        case (is Error<InnerLiteral, InputElement>)
+        {
+            return PointOutTheError(input.take(input.size - innerR.rest.size), innerR.rest, ["Couldn't parse the contents of the enclosing parse."]);
+        }
+    }
+    value inners = ok(_inners.sequence(), _input);
 
     value delimRightResult = delimRight(inners.rest);
     if (is Error<DelimLiteral, InputElement> delimRightResult)
     {
-        return MultitudeOfErrors([delimRightResult, PointOutTheError(input.take(input.size - delimRightResult.rest.size), delimRightResult.rest)], ["Missing ending delimeter in enclosing parse."]);
+        return PointOutTheError(input.take(input.size - delimRightResult.rest.size), delimRightResult.rest, ["Missing ending delimeter in enclosing parse."]);
     }
     assert(is Ok<DelimLiteral, InputElement> delimRightResult);
 
@@ -62,35 +82,10 @@ void testEnclosedBy()
 }
 
 shared
-Ok<[InputElement, InnerLiteral[], InputElement], InputElement>|Error<InputElement, InputElement> enclosedByLiteral<InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
+Parser<[InputElement, InnerLiteral[], InputElement], InputElement> enclosedByLiteral<InnerLiteral, InputElement>(InputElement delim, Parser<InnerLiteral, InputElement> inner, InputElement delimRight = delim)
         given InnerLiteral satisfies Object
         given InputElement satisfies Object
-{
-    InputElement delim;
-    Parser<InnerLiteral, InputElement> inner;
-    InputElement delimRight;
-
-    value delimP = literal(delim);
-    value delimRP = literal(delimRight);
-
-    value delimResult = delimP(input);
-    if (is Error<InputElement, InputElement> delimResult)
-    {
-        return delimResult.appendMessage("Missing starting delimeter in enclosing parse.");
-    }
-    assert(is Ok<InputElement, InputElement> delimResult);
-
-    value inners = zeroOrMore(inner)(delimResult.rest);
-
-    value delimRightResult = delimRP(inners.rest);
-    if (is Error<InputElement, InputElement> delimRightResult)
-    {
-        return MultitudeOfErrors([delimRightResult, PointOutTheError(input.take(input.size - delimRightResult.rest.size), delimRightResult.rest)], ["Missing ending delimeter in enclosing parse."]);
-    }
-    assert(is Ok<InputElement, InputElement> delimRightResult);
-
-    return ok([delimResult.result, inners.result, delimRightResult.result], delimRightResult.rest);
-}
+        => enclosedBy(literal(delim), inner, literal(delimRight));
 
 test
 void testEnclosedByLiteral()
@@ -106,7 +101,7 @@ void testEnclosedByLiteral()
 
 "[[inner]] is possibly-empty."
 shared
-Ok<InnerLiteral[], InputElement>|Error<DelimLiteral, InputElement> between<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
+ParseResult<InnerLiteral[], InputElement> between<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
 {
     Parser<DelimLiteral, InputElement> delim;
     Parser<InnerLiteral, InputElement> inner;
@@ -119,14 +114,14 @@ Ok<InnerLiteral[], InputElement>|Error<DelimLiteral, InputElement> between<Delim
     {
         return ok(result.result[1], result.rest);
     }
-    case (is Error<DelimLiteral, InputElement>)
+    case (is Error<Anything, InputElement>)
     {
-        return result;
+        return result.toJustError;
     }
 }
 
 shared
-Ok<InnerLiteral[], InputElement>|Error<InputElement, InputElement> betweenLiteral<InnerLiteral, InputElement>(InputElement delim, Parser<InnerLiteral, InputElement> inner, InputElement delimRight = delim)({InputElement*} input)
+Parser<InnerLiteral[], InputElement> betweenLiteral<InnerLiteral, InputElement>(InputElement delim, Parser<InnerLiteral, InputElement> inner, InputElement delimRight = delim)
         given InnerLiteral satisfies Object
         given InputElement satisfies Object
-        => between(literal(delim), inner, literal(delimRight))(input);
+        => between(literal(delim), inner, literal(delimRight));

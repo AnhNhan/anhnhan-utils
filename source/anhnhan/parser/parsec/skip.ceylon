@@ -7,20 +7,26 @@
  */
 
 "Applies a [[parser]] on the [[input]] (eventually advancing the input state),
- and discards the parsed result. Effectively 'skips' the result of the parser."
+ and discards the parsed result. Effectively 'skips' the result of the parser.
+
+ The [[parser]] *has* to apply, and you will end up with an instance of [[Empty]]
+ in your token stream."
 shared
-ParseResult<[], InputElement> skip<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
-        given Literal satisfies Object
+ParseResult<[], InputElement> skip<InputElement>(Parser<Anything, InputElement> parser)({InputElement*} input)
         => parser(input).bind {
                 (_ok) => ok([], _ok.rest);
                 (error) => JustError(input, ["Could not skip."]);
             };
 
-"Aka skippable, or skipIgnore."
+"Aka skippable, or skipIgnore. Note that you will end up with an instance of
+ [[Empty]] in your token stream."
 shared
-ParseResult<[], InputElement> ignore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
-        given Literal satisfies Object
+ParseResult<[], InputElement> ignore<InputElement>(Parser<Anything, InputElement> parser)({InputElement*} input)
         => parser(input).bind {
                 (_ok) => ok([], _ok.rest);
                 (_) => ok([], input);
             };
+
+shared
+Parser<Literal, InputElement> ignoreSurrounding<Literal, InputElement>(Parser<Anything, InputElement> ignore)(Parser<Literal, InputElement> parser)
+        => left(right(ignore, parser), ignore);

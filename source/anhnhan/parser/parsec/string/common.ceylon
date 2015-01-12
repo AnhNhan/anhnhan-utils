@@ -12,12 +12,12 @@ import anhnhan.parser.parsec {
 }
 
 shared
-alias StringParseResult
-        => ParseResult<Character, Character>;
+alias StringParseResult<Literal = Character>
+        => ParseResult<Literal, Character>;
 
 shared
-interface StringParser
-        => Parser<Character, Character>;
+interface StringParser<Literal = Character>
+        => Parser<Literal, Character>;
 
 shared
 interface CharacterPredicate

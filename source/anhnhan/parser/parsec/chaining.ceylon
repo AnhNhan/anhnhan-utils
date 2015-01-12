@@ -66,7 +66,15 @@ Ok<Literal[], InputElement> zeroOrMore<Literal, InputElement>(Parser<Literal, In
     return ok(results.sequence(), _input);
 }
 
+shared
+Ok<Literal[], InputElement> zeroOrMoreInterleaved<Literal, InputElement>(Parser<Anything, InputElement> interleave)(Parser<Literal, InputElement> parser)({InputElement*} str)
+        => zeroOrMore(right(interleave, parser))(str);
+
 // Success may be skewed due to possibly containing empty results.
 shared
 ParseResult<[Literal+], InputElement> oneOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} str)
         => forceMany(zeroOrMore<Literal, InputElement>(parser)(str));
+
+shared
+ParseResult<[Literal+], InputElement> oneOrMoreInterleaved<Literal, InputElement>(Parser<Anything, InputElement> interleave)(Parser<Literal, InputElement> parser)({InputElement*} str)
+        => oneOrMore(right(interleave, parser))(str);
