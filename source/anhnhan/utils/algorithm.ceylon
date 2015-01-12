@@ -61,8 +61,8 @@ shared T _nonempty<T, U>(T+ values)
 }
 
 "Joins together nested iterables. Like PHP's `array_merge`."
-shared {Element*}? joinIterables<Element>({{Element*}*} elements)
-    => elements.reduce(({Element*} partial, {Element*} element) => partial.chain(element));
+shared {Element*} joinIterables<Element>({{Element*}*} elements)
+    => elements.fold<{Element*}>({})(({Element*} partial, {Element*} element) => partial.chain(element));
 
 shared Comparison compareByKey<Compared>(Compared->Anything x, Compared->Anything y)
     given Compared satisfies Comparable<Compared>

@@ -13,4 +13,4 @@
 
    It is especially useful to join a list of lines back into a single string."""
 shared String joinStrings({String*} strings, String joinWith = "\n")
-        => strings.interpose(joinWith).reduce((String? partial, String element) => (partial else "") + element) else "";
+        => strings.interpose(joinWith).fold("")((String partial, String element) => partial + element);
