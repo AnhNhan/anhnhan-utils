@@ -16,7 +16,11 @@ import anhnhan.utils {
 
 import ceylon.collection {
     LinkedList,
-    HashMap
+    HashMap,
+    MutableMap
+}
+import ceylon.language.meta {
+    type
 }
 
 /*
@@ -34,16 +38,36 @@ import ceylon.collection {
  */
 
 shared
-ContextFreeGrammar<Token> grammar<Token>({Rule<Token>+} _rules, String _startRuleName, Integer _limit = 65536, Boolean checkCorrectness = true)
+ContextFreeGrammar<Token> grammar<Token>({Rule<Token>|ContextFreeGrammar<Token>+} _rules, String _startRuleName, Integer _limit = 65536, Boolean checkCorrectness = true)
 {
-    value map = HashMap { entries = _rules.map((rule) => rule.name->rule); };
+    {<String->Rule<Token>>+} collecting(Rule<Token>|ContextFreeGrammar<Token> obj)
+    {
+        if (is Rule<Token> obj)
+        {
+            return {obj.name->obj};
+        }
+        else
+        {
+            assert(is ContextFreeGrammar<Token> obj);
+            value rules = obj.rules.items.collect((Rule<Token> rule) => rule.name->rule);
+            if (nonempty rules)
+            {
+                return rules;
+            }
+            else
+            {
+                throw Exception("Received an empty grammar, can't embed it.");
+            }
+        }
+    }
+    value map = HashMap { entries = _rules.flatMap(collecting); };
     // Category check has provided me confusing results. Do it like a real man
     // instead.
     assert(exists startRule = map[_startRuleName]);
 
     if (checkCorrectness)
     {
-        value _missingRules = _rules.flatMap((rule)
+        value _missingRules = map.items.flatMap((rule)
             => rule.productions.flatMap((production)
             => production.collect((element)
                 {
@@ -61,7 +85,7 @@ ContextFreeGrammar<Token> grammar<Token>({Rule<Token>+} _rules, String _startRul
         if (nonempty missingRules = _missingRules.coalesced.sequence())
         {
             value mapped = joinStrings(missingRules.map((str) => "<``str``>"), ", ");
-            throw Exception("Rules ``mapped`` do not exist in grammar. Please check your grammar for any typos.");
+            throw Exception("Rules ``mapped`` do not exist in the grammar. Please check your grammar for any typos.");
         }
     }
 
@@ -92,16 +116,17 @@ interface ContextFreeGrammar<Token>
     shared default throws(`class Exception`, "the token limit is exceeded.") throws(`class Exception`, "a rule has not been found.")
     {Token+} generate(String startRuleName = this.startRuleName, Integer limit = this.limit)
     {
-        "Counter to keep track if we exceeded"
+        "Counter to keep track whether we exceeded the token limit"
         value count = Counter(0, limit, "Token limit exceeded.");
         value rules = this.rules;
         value _startRule = rules[startRuleName];
+        value productionCache = HashMap<[String, String], {Token+}>();
         if (is Null _startRule)
         {
             throw Exception("Start rule <``startRuleName``> does not exist.");
         }
         assert(exists _startRule);
-        return applyRules<Token>([_startRule], count, rules);
+        return applyRules<Token>([_startRule], count, rules, productionCache);
     }
 
     shared default
@@ -110,9 +135,11 @@ interface ContextFreeGrammar<Token>
         assert(count >= 0);
         return (0..count).map((_) => generate(startRuleName, limit));
     }
+
+    string => "``type(this)``\n``rules``";
 }
 
-{Token+} applyRules<Token>(Production<Token> inputRule, Counter counter, Map<String, Rule<Token>> rules)
+{Token+} applyRules<Token>(Production<Token> inputRule, Counter counter, Map<String, Rule<Token>> rules, MutableMap<[String, String], {Token+}> productionCache)
 {
     counter.increment();
 
@@ -123,12 +150,13 @@ interface ContextFreeGrammar<Token>
         if (is Rule<Token>|RuleReference production)
         {
             Rule<Token> rule;
-            if (is Rule<Token> production)
+            if (is RuleReference production)
             {
-                rule = production;
-            }
-            else if (is RuleReference production)
-            {
+                if (is CachedRuleReference production, exists cachedProduction = productionCache[[production.name, production.cacheBucketName]])
+                {
+                    output.add(cachedProduction);
+                    continue;
+                }
                 value _rule = rules[production.name];
                 if (exists _rule)
                 {
@@ -139,16 +167,33 @@ interface ContextFreeGrammar<Token>
                     throw Exception("Rule ``production.name`` has not been found.");
                 }
             }
+            else if (is Rule<Token> production)
+            {
+                rule = production;
+            }
             else
             {
                 return nothing;
             }
+
             value randomProduction = pick_random(rule.productions, LCG().random);
-            output.add(applyRules(randomProduction, counter, rules));
+            value applied = applyRules(randomProduction, counter, rules, productionCache);
+
+            if (is CachedRuleReference production)
+            {
+                productionCache.put([production.name, production.cacheBucketName], applied);
+            }
+
+            output.add(applied);
         }
-        if (is Token production)
+        else if (is Token production)
         {
             output.add({production});
+        }
+        else
+        {
+            value t = className(production else 0);
+            throw Exception("Unaccounted case for ``production else "<null>"`` (``t.string``)");
         }
     }
 

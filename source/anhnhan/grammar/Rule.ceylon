@@ -7,7 +7,7 @@
  */
 
 shared
-interface Rule<Terminal>
+interface Rule<out Terminal>
 {
     shared formal
     String name;
@@ -19,7 +19,7 @@ interface Rule<Terminal>
 }
 
 shared
-interface Production<Terminal>
+interface Production<out Terminal>
         => {Rule<Terminal>|RuleReference|Terminal+};
 
 shared
@@ -28,7 +28,30 @@ interface RuleReference
     shared formal
     String name;
 
-    string => "[``name``]";
+    shared default actual
+    String string => "[``name``]";
+}
+
+shared
+class EmbeddedGrammar<out Terminal>(name, grammar)
+        satisfies Rule<Terminal>
+{
+    shared actual
+    String name;
+
+    ContextFreeGrammar<Terminal> grammar;
+
+    shared actual
+    {Production<Terminal>+} productions;
+    value rules = grammar.rules.items.collect((_) => {_});
+    if (nonempty rules)
+    {
+        productions = rules;
+    }
+    else
+    {
+        throw Exception("Grammar has no rules, can't embed.");
+    }
 }
 
 shared
