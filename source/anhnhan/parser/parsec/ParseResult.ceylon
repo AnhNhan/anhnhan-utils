@@ -44,6 +44,14 @@ interface ParseResult<out Result, out InputElement>
     shared default
     Ok<Result, InputElement>|ReturnError bindError<ReturnError>(ReturnError(Error<Result, InputElement>) onError)
             => bind<Ok<Result, InputElement>, ReturnError>(identity<Ok<Result, InputElement>>, onError);
+
+    shared default
+    ParseResult<Result, InputElement> label(String label)
+            => bind(identity<Ok<Result, InputElement>>, (error) => error.appendMessage(label));
+
+    shared default
+    ParseResult<Result, InputElement> expectedLabel(String expected)
+            => label("Expected: ``expected``");
 }
 
 shared
@@ -170,6 +178,8 @@ interface Error<out Result, out InputElement>
             => JustError(this.rest, this.messages);
 }
 
+"General purpose error, fitting everywhere (since it usually is resolved as
+ `JustError<Nothing, InputElement>`)."
 shared final
 class JustError<out Result, out InputElement>(rest, messages = [])
         extends Object()
