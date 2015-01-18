@@ -55,12 +55,12 @@ class NodesObj<InputElement>(
 {}
 
 shared
-Token<InputElement> createToken<InputElement>(String tokenName)({InputElement*} lits)
+Token<InputElement> token<InputElement>(String tokenName)({InputElement*} lits)
         => TokenObj(tokenName, lits.sequence());
 
 shared
 Parser<Token<Literal>, InputElement> tokenParser<Literal, InputElement>(String tokenName, Parser<Literal[], InputElement> parser)
-        => apply(parser, createToken<Literal>(tokenName));
+        => apply(parser, token<Literal>(tokenName));
 
 shared
 Nodes<InputElement> nodes<InputElement>(String nodeName)(ParseTree<InputElement>[] elements)
