@@ -30,7 +30,7 @@ ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, Secon
 }
 
 shared
-ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({InputElement*} input)
+ParseResult<[Literal+], InputElement> sequence<Literal, InputElement>(parsers)({InputElement*} input)
 {
     Parser<Literal, InputElement>+ parsers;
     variable value _input = input;
@@ -51,7 +51,11 @@ ParseResult<Literal[], InputElement> sequence<Literal, InputElement>(parsers)({I
     }
 
     // TODO: Filter out [] instances coming from skip
-    return ok(results.sequence(), _input);
+    "We have multiple parsers - so we have multiple elements.
+     Of course this will change once we do filter elements from
+     [[skip]], [[ignore]] etc."
+    assert(nonempty seq = results.sequence());
+    return ok(seq, _input);
 }
 
 shared
@@ -130,4 +134,31 @@ void testSeparatedBy()
     assertEquals(result2.result, [['f', 'o', 'o'], ['f', 'o', 'o'], ['f', 'o', 'o']]);
     // Bug? We are disregarding trailing separators
     assertEquals(result2.rest, "");
+}
+
+"Applies [[innerP]] repeatedly until [[untilP]] can be successfully applied.
+ The result is then returned."
+shared
+ParseResult<Literal[], InputElement> until<Literal, InputElement>(Parser<Anything, InputElement> untilP, Parser<Literal, InputElement> innerP)({InputElement*} input)
+{
+    value list = LinkedList<Literal>();
+    variable
+    value _input = input;
+    while (is Error<Anything, InputElement> untilR = untilP(_input))
+    {
+        value result = innerP(_input);
+        switch (result)
+        case (is Ok<Literal, InputElement>)
+        {
+            list.add(result.result);
+            _input = result.rest;
+        }
+        case (is Error<Literal, InputElement>)
+        {
+            return result.toJustError.appendMessage("Failed 'until' parse. Did not reach ending delimeter.");
+        }
+    }
+
+    value seq = list.sequence();
+    return ok(seq, _input);
 }
