@@ -7,7 +7,21 @@
  */
 
 shared
+interface NonTerminal<out Terminal>
+        of Rule<Terminal> | RuleReference
+{}
+
+"Represents a rule in a grammar. A rule yields one or more productions, each
+ denoting a sequence of tokens and (sub-)rules (which may be referenced within
+ the same grammar).
+
+ For parsing, each single production represents an alternative branch to parse.
+
+ When generating a token stream from a grammar, a single production is selected
+ at random and applied."
+shared see(`function rule`)
 interface Rule<out Terminal>
+        satisfies NonTerminal<Terminal>
 {
     shared formal
     String name;
@@ -20,15 +34,18 @@ interface Rule<out Terminal>
 
 shared
 interface Production<out Terminal>
-        => {Rule<Terminal>|RuleReference|Terminal+};
+        => {NonTerminal<Terminal>|Terminal+};
 
-shared
+"Allows to reference a rule within a rule production without having to access
+ or embed the rule itself."
+shared see(`function ref`)
 interface RuleReference
+        satisfies NonTerminal<Nothing>
 {
     shared formal
     String name;
 
-    shared default actual
+    shared actual default
     String string => "[``name``]";
 }
 

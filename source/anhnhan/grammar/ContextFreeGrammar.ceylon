@@ -10,8 +10,7 @@ import anhnhan.random {
     LCG
 }
 import anhnhan.utils {
-    pick_random,
-    joinStrings
+    pick_random
 }
 
 import ceylon.collection {
@@ -37,8 +36,19 @@ import ceylon.language.meta {
      * Ambiguity
  */
 
+"Creates a context free grammar from the given rules and grammars. If a grammar
+ is passed in, its rules are embedded into the rule set of the created grammar
+ (as opposed to [[EmbeddedGrammar]])."
 shared
-ContextFreeGrammar<Token> grammar<Token>({Rule<Token>|ContextFreeGrammar<Token>+} _rules, String _startRuleName, Integer _limit = 65536, Boolean checkCorrectness = true)
+ContextFreeGrammar<Token> grammar<Token>(
+    {Rule<Token>|ContextFreeGrammar<Token>+} _rules,
+    ""
+    String _startRuleName,
+    Integer _limit = 65536,
+    "If set to [[true]], we will check each of the grammar's rule production
+     for invalid references, and throw an exception if any had been found."
+    Boolean checkCorrectness = true
+)
 {
     {<String->Rule<Token>>+} collecting(Rule<Token>|ContextFreeGrammar<Token> obj)
     {
@@ -84,8 +94,8 @@ ContextFreeGrammar<Token> grammar<Token>({Rule<Token>|ContextFreeGrammar<Token>+
                 })));
         if (nonempty missingRules = _missingRules.coalesced.sequence())
         {
-            value mapped = joinStrings(missingRules.map((str) => "<``str``>"), ", ");
-            throw Exception("Rules ``mapped`` do not exist in the grammar. Please check your grammar for any typos.");
+            value mapped = missingRules.map((str) => "<``str``>").reduce((String x, y) => x + ", " + y);
+            throw Exception("Rule(s) ``mapped`` do not exist in the grammar. Please check your grammar for any typos.");
         }
     }
 
@@ -100,7 +110,7 @@ ContextFreeGrammar<Token> grammar<Token>({Rule<Token>|ContextFreeGrammar<Token>+
     return grammar;
 }
 
-shared
+shared see(`function grammar`)
 interface ContextFreeGrammar<Token>
 {
     "Arbitrary limit for number of tokens."
@@ -117,7 +127,7 @@ interface ContextFreeGrammar<Token>
     {Token+} generate(String startRuleName = this.startRuleName, Integer limit = this.limit)
     {
         "Counter to keep track whether we exceeded the token limit"
-        value count = Counter(0, limit, "Token limit exceeded.");
+        value count = Counter(0, limit, "Token limit of ``limit`` exceeded.");
         value rules = this.rules;
         value _startRule = rules[startRuleName];
         value productionCache = HashMap<[String, String], {Token+}>();
@@ -147,10 +157,15 @@ interface ContextFreeGrammar<Token>
 
     for (production in inputRule)
     {
-        if (is Rule<Token>|RuleReference production)
+        if (is NonTerminal<Token> production)
         {
             Rule<Token> rule;
-            if (is RuleReference production)
+            switch (production)
+            case (is Rule<Token>)
+            {
+                rule = production;
+            }
+            case (is RuleReference)
             {
                 if (is CachedRuleReference production, exists cachedProduction = productionCache[[production.name, production.cacheBucketName]])
                 {
@@ -166,14 +181,6 @@ interface ContextFreeGrammar<Token>
                 {
                     throw Exception("Rule ``production.name`` has not been found.");
                 }
-            }
-            else if (is Rule<Token> production)
-            {
-                rule = production;
-            }
-            else
-            {
-                return nothing;
             }
 
             value randomProduction = pick_random(rule.productions, LCG().random);
@@ -211,6 +218,12 @@ class Counter(
     String? limitMsg = null
 )
 {
+    if (exists limit)
+    {
+        "Counter limit has to be strictly positive."
+        assert(limit.positive);
+    }
+
     shared
     void increment()
     {
