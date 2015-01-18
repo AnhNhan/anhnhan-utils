@@ -33,6 +33,10 @@ interface DirectView<Element>
     shared formal
     Scanline<Element> line(Integer line);
 
+    shared default actual
+    Iterator<Scanline<Element>> iterator()
+            => {for (hh in 0..height-1) line(hh)}.iterator();
+
     shared actual default
     Element? get([Integer, Integer] key)
             => line(key[0])[key[1]];
@@ -48,6 +52,10 @@ interface Scanline<Element>
 
     shared formal
     Element get(Integer index);
+
+    shared default actual
+    Iterator<Element> iterator()
+            => {for (ww in 0..width-1) get(ww)}.iterator();
 }
 
 shared
