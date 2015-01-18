@@ -36,7 +36,7 @@ ParseResult<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement> enclosed
     value _inners = LinkedList<InnerLiteral>();
     variable
     value _input = delimResult.rest;
-    while (is Error<InnerLiteral, InputElement> nonDelimParse = delimRight(_input))
+    while (is Error<DelimLiteral, InputElement> nonDelimParse = delimRight(_input))
     {
         value innerR = inner(_input);
         switch (innerR)
