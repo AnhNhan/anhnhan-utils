@@ -9,6 +9,10 @@
 import ceylon.collection {
     LinkedList
 }
+import ceylon.test {
+    test,
+    assertEquals
+}
 
 shared
 ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, SecondLiteral, InputElement>(firstP, secondP)({InputElement*} input)
@@ -78,3 +82,52 @@ ParseResult<[Literal+], InputElement> oneOrMore<Literal, InputElement>(Parser<Li
 shared
 ParseResult<[Literal+], InputElement> oneOrMoreInterleaved<Literal, InputElement>(Parser<Anything, InputElement> interleave)(Parser<Literal, InputElement> parser)({InputElement*} str)
         => oneOrMore(right(interleave, parser))(str);
+
+shared
+ParseResult<[Literal+], InputElement> separatedBy<Literal, InputElement>(Parser<Literal, InputElement> contentP, Parser<Anything, InputElement> separatorP)({InputElement*} str)
+{
+    value exceptLast = zeroOrMore(leftRrightS(contentP, separatorP))(str);
+    return exceptLast.bind
+    {
+        onOk = (_ok)
+        {
+            value last = contentP(_ok.rest);
+            if (is Ok<Literal, InputElement> last, nonempty okResult = _ok.result.append([last.result]))
+            {
+                return ok(okResult, last.rest);
+            }
+            else if (nonempty okResult = _ok.result)
+            {
+                // Notice: This disregards trailing separators
+                return ok(okResult, _ok.rest);
+            }
+            else
+            {
+                return JustError(_ok.rest);
+            }
+        };
+        (error) => error.toJustError;
+    };
+}
+
+test
+void testSeparatedBy()
+{
+    value str1 = "foo";
+    value str2 = "foo,foo,foo,";
+
+    value parse = separatedBy(manySatisfy((Character char) => char != ','), literal(','));
+
+    value result1 = parse(str1);
+    value result2 = parse(str2);
+
+    assert(is Ok<[[Character+]+], Character> result1);
+    assert(is Ok<[[Character+]+], Character> result2);
+
+    assertEquals(result1.result, [['f', 'o', 'o']]);
+    assertEquals(result1.rest, "");
+    // Note: Since [[contentP]] is a [Literal+] parser, we are not parsing the 'empty' column after the last comma
+    assertEquals(result2.result, [['f', 'o', 'o'], ['f', 'o', 'o'], ['f', 'o', 'o']]);
+    // Bug? We are disregarding trailing separators
+    assertEquals(result2.rest, "");
+}
