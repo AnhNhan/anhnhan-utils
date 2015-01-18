@@ -6,6 +6,15 @@
     Software provided as-is, no warranty
  */
 
+import anhnhan.parser.parsec.string {
+    letter
+}
+
+import ceylon.test {
+    assertEquals,
+    test
+}
+
 "Applies a [[parser]] on the [[input]] (eventually advancing the input state),
  and discards the parsed result. Effectively 'skips' the result of the parser.
 
@@ -29,4 +38,16 @@ ParseResult<[], InputElement> ignore<InputElement>(Parser<Anything, InputElement
 
 shared
 Parser<Literal, InputElement> ignoreSurrounding<Literal, InputElement>(Parser<Anything, InputElement> ignore)(Parser<Literal, InputElement> parser)
-        => left(right(ignore, parser), ignore);
+        => leftRrightS(right(ignore, parser), ignore);
+
+test
+void testIgnoreSurrounding()
+{
+    value str = "***foo***";
+
+    value parse = ignoreSurrounding<[Character+], Character>(ignore(manySatisfy<Character>('*'.equals)))(manyOf(letter));
+    value result = parse(str);
+    assert(is Ok<[Character+], Character> result);
+    assertEquals(result.result, ['f', 'o', 'o']);
+    assertEquals(result.rest, "");
+}

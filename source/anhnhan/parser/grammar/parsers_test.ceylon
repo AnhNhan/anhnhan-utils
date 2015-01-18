@@ -10,7 +10,7 @@ import anhnhan.parser.parsec {
     Ok
 }
 import anhnhan.parser.tree {
-    StringNodes
+    Nodes
 }
 
 import ceylon.test {
@@ -22,8 +22,9 @@ void grammar_parse_success_test()
 {
     value grammars = {
         """
+           (* This some cool-ass grammar, yo? *)
            S: ABs
-           ABs: A ABs | B ABs | eps
+           ABs: A ABs /*really-cool*/ | B ABs | eps
            A: 'a'
            B: 'b'
            ignore: "S: ABs A: 'a'"
@@ -36,6 +37,6 @@ void grammar_parse_success_test()
     {
         value result = parseGrammar(grammar);
         print(result);
-        assert(is Ok<StringNodes, Character> result);
+        assert(is Ok<Nodes<Character>, Character> result);
     }
 }

@@ -26,7 +26,8 @@ import anhnhan.parser.parsec {
     ignore,
     manyOf,
     ignoreSurrounding,
-    emptyLiteral
+    emptyLiteral,
+    leftRrightS
 }
 import anhnhan.parser.parsec.string {
     backslashEscapable,
@@ -35,20 +36,23 @@ import anhnhan.parser.parsec.string {
     StringParseResult
 }
 import anhnhan.parser.tree {
-    StringToken,
-    StringNodes,
     nodeParser,
     tokenParser,
-    StringParseTree
+    Nodes,
+    Token,
+    ParseTree
 }
 
 import ceylon.collection {
     HashMap
 }
+import ceylon.language {
+    _or=or
+}
 
 shared
-StringParser<StringNodes> parseGrammar
-        = nodeParser("Grammar", left(oneOrMore(s_ign(parseRule)), emptyLiteral<Character>));
+StringParser<Nodes<Character>> parseGrammar
+        = nodeParser("Grammar", leftRrightS(oneOrMore(s_ign(parseRule)), emptyLiteral<Character>));
 
 StringParser<[]> ignores
         = ignore(manyOf(
@@ -65,10 +69,10 @@ StringParser<Character|Character[]> ruleChar
             literals(":=")
         );
 
-StringParser<StringToken> ruleStart
-        = left(name, s_ign(ruleChar));
+StringParser<Token<Character>> ruleStart
+        = leftRrightS(name, s_ign(ruleChar));
 
-StringParser<StringNodes> parseRule
+StringParser<Nodes<Character>> parseRule
         = nodeParser(
             "Rule",
             sequence(
@@ -83,29 +87,29 @@ StringParser<StringNodes> parseRule
             )
         );
 
-StringParseResult<StringParseTree> expression(Characters input)
-        => or<StringParseTree, StringParseTree, Character>(
+StringParseResult<ParseTree<Character>> expression(Characters input)
+        => or<ParseTree<Character>, ParseTree<Character>, Character>(
             alternation,
             atomarExpressions
         )(input);
 
 StringParser alternationChar = or(literal('|'), literal('/'));
 
-StringParser<StringParseTree> alternation
+StringParser<ParseTree<Character>> alternation
         = or(
             right(alternationChar, alternationAtom),
             alternationAtom
         );
 
-StringParser<StringParseTree> alternationAtom
+StringParser<ParseTree<Character>> alternationAtom
         = nodeParser(
             "Alternation",
-            oneOrMore<StringParseTree, Character>(
+            oneOrMore<ParseTree<Character>, Character>(
                 nodeParser(
                     "Branch",
                     s_ign(right(
                         alternationChar,
-                        oneOrMore<StringParseTree, Character>(
+                        oneOrMore<ParseTree<Character>, Character>(
                             s_ign(atomarExpression)
                         )
                     ))
@@ -113,12 +117,12 @@ StringParser<StringParseTree> alternationAtom
             )
         );
 
-StringParser<StringParseTree> atomarExpressions
-        = nodeParser("Expressions", oneOrMore<StringParseTree, Character>(s_ign(atomarExpression)));
+StringParser<ParseTree<Character>> atomarExpressions
+        = nodeParser("Expressions", oneOrMore<ParseTree<Character>, Character>(s_ign(atomarExpression)));
 
 "Like [[expression]], but without alternation, infix or postfix operators, or
  any other parsers causing left-recursives trouble."
-StringParser<StringParseTree> atomarExpression
+StringParser<ParseTree<Character>> atomarExpression
         = anyOf(
             pSingleQuoteString,
             pDoubleQuoteString,
@@ -128,9 +132,9 @@ StringParser<StringParseTree> atomarExpression
             name
         );
 
-StringParser<StringToken> name = tokenParser("Name", manySatisfy((Character char) => char.letter || char.digit, "name"));
+StringParser<Token<Character>> name = tokenParser("Name", manySatisfy(_or(Character.letter, Character.digit), "name"));
 
-StringParser<StringToken> pEpsilon
+StringParser<Token<Character>> pEpsilon
         = tokenParser("Epsilon", anyOf(
             literals("\{GREEK SMALL LETTER EPSILON}"),
             literals("Epsilon"),
@@ -147,18 +151,18 @@ Character stringEscapeMap(Character lit)
                 'n' -> '\n'
             }; }.get(lit) else lit;
 
-StringParser<StringToken> pSingleQuoteString
+StringParser<Token<Character>> pSingleQuoteString
         => tokenParser("String", backslashEscapable(literal('\''), stringEscapeMap));
-StringParser<StringToken> pDoubleQuoteString
+StringParser<Token<Character>> pDoubleQuoteString
         => tokenParser("String", backslashEscapable(literal('"'), stringEscapeMap));
 
-StringParser<StringNodes> pHiddenElement
+StringParser<Nodes<Character>> pHiddenElement
         = nodeParser("HiddenElement", betweenLiteral('<', expression, '>'));
 
-StringParser<StringNodes> pGroup
+StringParser<Nodes<Character>> pGroup
         = nodeParser("Group", betweenLiteral('(', expression, ')'));
 
-StringParser<StringToken> pComment
+StringParser<Token<Character>> pComment
         = tokenParser("Comment", or(
             between(literals("(*"), anyLiteral<Character>, literals("*)")),
             between(literals("/*"), anyLiteral<Character>, literals("*/"))
