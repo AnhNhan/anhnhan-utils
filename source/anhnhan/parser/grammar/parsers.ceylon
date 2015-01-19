@@ -27,8 +27,8 @@ import anhnhan.parser.parsec {
     leftRrightS,
     label,
     expected,
-    negativeLookahead,
-    left
+    left,
+    until
 }
 import anhnhan.parser.parsec.string {
     backslashEscapable,
@@ -95,12 +95,12 @@ StringParser<Nodes<Character>> parseRule
             "Rule",
             sequence(
                 ruleStart,
-                leftRrightS(
-                    nodeParser(
-                        "Expressions",
-                        oneOrMore(s_ign(expression))
-                    ),
-                    negativeLookahead(ruleStart)
+                nodeParser(
+                    "Expressions",
+                    until(
+                        or(ruleStart, emptyLiteral<Character>),
+                        expression
+                    )
                 )
             )
         );
@@ -113,7 +113,8 @@ void testParseRule()
         "S := 'hi' B C"
     }.collect(assertCanParseWithNothingLeft(parseRule));
     {
-        "S:S S:S"
+        "S:S S:S",
+        "A:B+C|D+E+F:G"
     }.collect(assertCanParseWithNothingLeft(oneOrMore(parseRule))).collect(print);
 }
 
@@ -134,7 +135,7 @@ StringParser<ParseTree<Character>> alternation
                     right(
                         s_ign(ignore(alternationChar)),
                         oneOrMore<ParseTree<Character>, Character>(
-                            s_ign(atomarExpression)
+                            atomarExpression
                         )
                     )
                 )
