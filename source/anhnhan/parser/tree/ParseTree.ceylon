@@ -29,6 +29,19 @@ interface Token<out InputElement>
 {
     shared formal
     InputElement[] token;
+
+    shared actual
+    Boolean equals(Object that)
+    {
+        if (is Token<InputElement> that) {
+            return name==that.name && token==that.token;
+        }
+        else {
+            return false;
+        }
+    }
+
+    hash => name.hash*31 + 7 + token.hash;
 }
 
 shared
@@ -37,6 +50,19 @@ interface Nodes<out InputElement>
 {
     shared formal
     ParseTree<InputElement>[] nodes;
+
+    shared actual
+    Boolean equals(Object that)
+    {
+        if (is Nodes<InputElement> that) {
+            return name==that.name && nodes==that.nodes;
+        }
+        else {
+            return false;
+        }
+    }
+
+    hash => name.hash*31 + 7 + nodes.hash;
 }
 
 class TokenObj<InputElement>(
@@ -45,10 +71,11 @@ class TokenObj<InputElement>(
     shared actual
     InputElement[] token
 )
+        extends Object()
         satisfies Token<InputElement>
 {
     shared actual
-    String render(Integer level) => "> ``name``=>``token``\n";
+    String render(Integer level) => "  > ``name``=>``token``";
 }
 
 class NodesObj<InputElement>(
@@ -57,12 +84,13 @@ class NodesObj<InputElement>(
     shared actual
     ParseTree<InputElement>[] nodes
 )
+        extends Object()
         satisfies Nodes<InputElement>
 {
     shared actual
     String render(Integer level)
             => "{  ``name`` =>
-                    ``nodes*.render(level + 1)*.lines*.map((_) => _.padLeading((level + 1) * 4))*.interpose("\n").fold<{String*}>({})(uncurry(Iterable<String>.chain<String, Null>)).fold("")(plus<String>)``
+                ``nodes*.render(level + 1)*.lines*.map((_) => _.padLeading((level + 1) * 4))*.interpose("\n").fold<{String*}>({})(uncurry(Iterable<String>.chain<String, Null>)).fold("")(plus<String>)``
                 }";
 }
 
