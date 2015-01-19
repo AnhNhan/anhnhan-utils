@@ -31,6 +31,8 @@ ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLit
     return MultitudeOfErrors([firstR, secondR], ["Neither of these matched."]);
 }
 
+"Tries all of the given [[parsers]], one after each other. Returns the result
+ of the first successful parser, or a collection of all applied parsers."
 shared
 ParseResult<Literal, InputElement> anyOf<Literal, InputElement>(Parser<Literal, InputElement>+ parsers)({InputElement*} input)
 {
@@ -52,7 +54,7 @@ ParseResult<Literal, InputElement> anyOf<Literal, InputElement>(Parser<Literal, 
     }
 
     assert(nonempty _errors = errors);
-    return MultitudeOfErrors(_errors);
+    return MultitudeOfErrors(_errors, ["Could not apply any parsers."]);
 }
 
 shared

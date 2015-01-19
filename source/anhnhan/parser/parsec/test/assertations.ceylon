@@ -8,7 +8,8 @@
 
 import anhnhan.parser.parsec {
     Parser,
-    Ok
+    Ok,
+    Error
 }
 
 import ceylon.test {
@@ -19,11 +20,15 @@ shared
 Ok<Literal, InputElement> assertCanParse<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
 {
     value result = parser(input);
-    if (is Ok<Literal, InputElement> result)
+    switch (result)
+    case (is Ok<Literal, InputElement>)
     {
         return result;
     }
-    throw AssertionError("Given parser failed for input <\"``input``\">: resulted in ``result``");
+    case (is Error<Literal, InputElement>)
+    {
+        throw AssertionError("Given parser failed for input <\"``input``\">: resulted in ``result``");
+    }
 }
 
 shared

@@ -191,7 +191,7 @@ class JustError<out Result, out InputElement>(rest, messages = [])
     shared actual
     String[] messages;
 
-    string = "JustError(parseRest='``rest``', messages=``messages``)";
+    string => "JustError(parseRest='``rest``', messages=``messages``)";
 
     shared actual Boolean equals(Object that) {
         if (is JustError<Result, InputElement> that) {

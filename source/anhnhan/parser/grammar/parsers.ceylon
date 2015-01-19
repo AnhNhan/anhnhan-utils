@@ -16,24 +16,28 @@ import anhnhan.parser.parsec {
     or,
     manySatisfy,
     right,
-    betweenLiteral,
     oneOrMore,
-    negativeLookahead,
     sequence,
-    left,
     anyLiteral,
     between,
     ignore,
     manyOf,
     ignoreSurrounding,
     emptyLiteral,
-    leftRrightS
+    leftRrightS,
+    label,
+    expected,
+    negativeLookahead,
+    left
 }
 import anhnhan.parser.parsec.string {
     backslashEscapable,
     whitespace,
     StringParser,
     StringParseResult
+}
+import anhnhan.parser.parsec.test {
+    assertCanParseWithNothingLeft
 }
 import anhnhan.parser.tree {
     nodeParser,
@@ -49,35 +53,49 @@ import ceylon.collection {
 import ceylon.language {
     _or=or
 }
+import ceylon.test {
+    test
+}
 
 shared
 StringParser<Nodes<Character>> parseGrammar
-        = nodeParser("Grammar", leftRrightS(oneOrMore(s_ign(parseRule)), emptyLiteral<Character>));
+        = nodeParser("Grammar", leftRrightS(oneOrMore(parseRule), label(emptyLiteral<Character>, "This probably means that we failed parsing pre-maturely.")));
 
 StringParser<[]> ignores
         = ignore(manyOf(
+            whitespace,
             pComment,
-            whitespace
+            // Some grammars write their rules like A + B + C. Just ignore them.
+            literal('+')
         ));
 StringParser<Literal> s_ign<Literal>(StringParser<Literal> parser)
         => ignoreSurrounding<Literal, Character>(ignores)(parser);
 
 StringParser<Character|Character[]> ruleChar
         = anyOf(
+            literals(":="),
             literal(':'),
-            literal('='),
-            literals(":=")
+            literal('=')
         );
 
 StringParser<Token<Character>> ruleStart
-        = leftRrightS(name, s_ign(ruleChar));
+        = leftRrightS(s_ign(name), s_ign(ruleChar));
+
+test
+void testRuleStart()
+{
+    {
+        "  ABC:   ",
+        "(*cool*)foo/*hi*/:=(*hurr*)"
+    }.collect(assertCanParseWithNothingLeft(ruleStart));
+}
 
 StringParser<Nodes<Character>> parseRule
         = nodeParser(
             "Rule",
             sequence(
                 ruleStart,
-                left(
+                leftRrightS(
                     nodeParser(
                         "Expressions",
                         oneOrMore(s_ign(expression))
@@ -87,52 +105,69 @@ StringParser<Nodes<Character>> parseRule
             )
         );
 
+test
+void testParseRule()
+{
+    {
+        "S:S",
+        "S := 'hi' B C"
+    }.collect(assertCanParseWithNothingLeft(parseRule));
+    {
+        "S:S S:S"
+    }.collect(assertCanParseWithNothingLeft(oneOrMore(parseRule))).collect(print);
+}
+
 StringParseResult<ParseTree<Character>> expression(Characters input)
-        => or<ParseTree<Character>, ParseTree<Character>, Character>(
+        => s_ign(or(
             alternation,
             atomarExpressions
-        )(input);
+        ))(input);
 
 StringParser alternationChar = or(literal('|'), literal('/'));
 
 StringParser<ParseTree<Character>> alternation
-        = or(
-            right(alternationChar, alternationAtom),
-            alternationAtom
-        );
-
-StringParser<ParseTree<Character>> alternationAtom
         = nodeParser(
             "Alternation",
             oneOrMore<ParseTree<Character>, Character>(
                 nodeParser(
                     "Branch",
-                    s_ign(right(
-                        alternationChar,
+                    right(
+                        s_ign(ignore(alternationChar)),
                         oneOrMore<ParseTree<Character>, Character>(
                             s_ign(atomarExpression)
                         )
-                    ))
+                    )
                 )
             )
         );
 
+test
+void testAlternation()
+{
+    {
+        "A B C",
+        "A B|C",
+        "A B | (C|D)"
+    }.collect(assertCanParseWithNothingLeft(alternation));
+}
+
 StringParser<ParseTree<Character>> atomarExpressions
-        = nodeParser("Expressions", oneOrMore<ParseTree<Character>, Character>(s_ign(atomarExpression)));
+        = nodeParser("Expressions", oneOrMore(s_ign(atomarExpression)));
 
 "Like [[expression]], but without alternation, infix or postfix operators, or
  any other parsers causing left-recursives trouble."
 StringParser<ParseTree<Character>> atomarExpression
-        = anyOf(
+        = left(anyOf(
             pSingleQuoteString,
             pDoubleQuoteString,
             pHiddenElement,
             pGroup,
             pEpsilon,
             name
-        );
+        ), or(ruleStart, emptyLiteral<Character>));
 
-StringParser<Token<Character>> name = tokenParser("Name", manySatisfy(_or(Character.letter, Character.digit), "name"));
+StringParser<Token<Character>> name
+        = expected(tokenParser("Name", manySatisfy(_or(Character.letter, Character.digit))), "name");
 
 StringParser<Token<Character>> pEpsilon
         = tokenParser("Epsilon", anyOf(
@@ -157,13 +192,39 @@ StringParser<Token<Character>> pDoubleQuoteString
         => tokenParser("String", backslashEscapable(literal('"'), stringEscapeMap));
 
 StringParser<Nodes<Character>> pHiddenElement
-        = nodeParser("HiddenElement", betweenLiteral('<', expression, '>'));
+        = nodeParser("HiddenElement", between(s_ign(literal('<')), expression, s_ign(literal('>'))));
 
 StringParser<Nodes<Character>> pGroup
-        = nodeParser("Group", betweenLiteral('(', expression, ')'));
+        = nodeParser("Group", between(s_ign(literal('(')), expression, s_ign(literal(')'))));
 
-StringParser<Token<Character>> pComment
-        = tokenParser("Comment", or(
+test
+void testPGroup()
+{
+    {
+        "   ( )   ",
+        "((( A )))",
+        "(((* *)))",
+        "( A B C )",
+        "(A B | C)"
+    }.collect(assertCanParseWithNothingLeft(pGroup));
+}
+
+StringParseResult<Token<Character>> pComment(Characters input)
+        => tokenParser("Comment", or(
             between(literals("(*"), anyLiteral<Character>, literals("*)")),
             between(literals("/*"), anyLiteral<Character>, literals("*/"))
-        ));
+        ))(input).label("Comment");
+
+test
+void testPComment()
+{
+    value strs = {
+        "(* cool comment, yo? *)",
+        "/*********************/",
+        "/**/",
+        "(**)",
+        "(*(**)",
+        "(*hi*)"
+    };
+    strs.collect(assertCanParseWithNothingLeft(pComment));
+}
