@@ -85,4 +85,11 @@ void grammar_dissected()
             ]);
 
     assertEquals(tree, expectedTree);
+
+    value start = system.nanoseconds;
+    for (_ in 0..100)
+    {
+        value _2 = parseGrammar(grammar);
+    }
+    print("Parsing a hundred times took ``(system.nanoseconds - start) / 1_000_000_000.0``s");
 }
