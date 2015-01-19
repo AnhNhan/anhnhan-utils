@@ -59,7 +59,7 @@ void grammar_dissected()
             = """S: A? (B C | D)+ <E?> <F>? | [G H] (I "S: ABs A: 'a'""b" J)
                  """;
     value tree = assertCanParseWithNothingLeft(parseGrammar)(grammar).result;
-print(tree.render());
+
     value expectedTree
             = node("Grammar", [
                 node("Rule", [
@@ -68,11 +68,11 @@ print(tree.render());
                         node("Branch", [
                             node("Optional", [tok("Name", "A")]),
                             node("OneOrMore", [node("Group", [node("Alternation", [node("Branch", [tok("Name", "B"), tok("Name", "C")]), node("Branch", [tok("Name", "D")])])])]),
-                            node("HiddenElement", [node("Optional", [tok("Name", "E")])]),
-                            node("Optional", [node("HiddenElement", [tok("Name", "F")])])
+                            node("HiddenElement", [node("Alternation", [node("Branch", [node("Optional", [tok("Name", "E")])])])]),
+                            node("Optional", [node("HiddenElement", [node("Alternation", [node("Branch", [tok("Name", "F")])])])])
                         ]),
                         node("Branch", [
-                            node("Optional", [name("G"), name("H")]),
+                            node("Optional", [node("Alternation", [node("Branch", [name("G"), name("H")])])]),
                             node("Group", [node("Alternation", [node("Branch", [
                                 name("I"),
                                 tok("String", "S: ABs A: 'a'"),

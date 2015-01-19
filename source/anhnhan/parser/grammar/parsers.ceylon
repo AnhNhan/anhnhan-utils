@@ -11,7 +11,6 @@ import anhnhan.parser {
 }
 import anhnhan.parser.parsec {
     anyOf,
-    apply,
     literals,
     literal,
     or,
@@ -31,7 +30,8 @@ import anhnhan.parser.parsec {
     left,
     not,
     zeroOrMore,
-    separatedBy
+    separatedBy,
+    ok
 }
 import anhnhan.parser.parsec.string {
     backslashEscapable,
@@ -47,7 +47,8 @@ import anhnhan.parser.tree {
     tokenParser,
     Nodes,
     Token,
-    ParseTree
+    ParseTree,
+    nodes
 }
 
 import ceylon.collection {
@@ -132,11 +133,7 @@ void testParseRule()
 StringParseResult<ParseTree<Character>> expression(Characters input)
         => s_ign(anyOf(
             alternation,
-            // For these three it would be cool if we could memoize / real lookahead
-            optionalSingle,
-            repetitionSingle,
-            oneOrMoreSingle,
-            atomarExpression
+            suffixedAtomarExpression
         ))(input);
 
 StringParser alternationChar = or(literal('|'), literal('/'));
@@ -147,7 +144,7 @@ StringParser<ParseTree<Character>> alternation
             nodeParser(
                 "Alternation",
                 separatedBy(
-                    nodeParser("Branch", oneOrMore(s_ign(atomarExpression))),
+                    nodeParser("Branch", oneOrMore(s_ign(suffixedAtomarExpression))),
                     s_ign(alternationChar)
                 )
             )
@@ -184,35 +181,8 @@ StringParser<ParseTree<Character>> atomarExpression
 StringParser<Token<Character>> name
         = expected(tokenParser("Name", manySatisfy(_or(Character.letter, Character.digit))), "name");
 
-StringParser<Nodes<Character>> optionalSingle
-        = nodeParser(
-            "Optional",
-            apply(
-                leftRrightS(atomarExpression, literal('?')),
-                (ParseTree<Character> tree) => [tree]
-            )
-        );
-
 StringParser<Nodes<Character>> optionalGroup
         = nodeParser("Optional", between(s_ign(literal('[')), expression, s_ign(literal(']'))));
-
-StringParser<Nodes<Character>> repetitionSingle
-        = nodeParser(
-            "ZeroOrMore",
-            apply(
-                leftRrightS(atomarExpression, literal('*')),
-                (ParseTree<Character> tree) => [tree]
-            )
-        );
-
-StringParser<Nodes<Character>> oneOrMoreSingle
-        = nodeParser(
-            "OneOrMore",
-            apply(
-                leftRrightS(atomarExpression, literal('+')),
-                (ParseTree<Character> tree) => [tree]
-            )
-        );
 
 StringParser<Token<Character>> pEpsilon
         = tokenParser("Epsilon", anyOf(
@@ -273,3 +243,21 @@ void testPComment()
     };
     strs.collect(assertCanParseWithNothingLeft(pComment));
 }
+
+StringParseResult<ParseTree<Character>> suffixedAtomarExpression(Characters input)
+        => atomarExpression(input).bind
+        {
+            (exprOk)
+            {
+                switch (exprOk.rest.first)
+                case ('?')
+                { return ok(nodes<Character>("Optional")([exprOk.result]), exprOk.rest.rest); }
+                case ('+')
+                { return ok(nodes<Character>("OneOrMore")([exprOk.result]), exprOk.rest.rest); }
+                case ('*')
+                { return ok(nodes<Character>("ZeroOrMore")([exprOk.result]), exprOk.rest.rest); }
+                else
+                { return exprOk; }
+            };
+            (error) => error;
+        };
