@@ -11,6 +11,7 @@ import anhnhan.parser {
 }
 import anhnhan.parser.parsec {
     anyOf,
+    apply,
     literals,
     literal,
     or,
@@ -28,7 +29,9 @@ import anhnhan.parser.parsec {
     label,
     expected,
     left,
-    until
+    not,
+    zeroOrMore,
+    separatedBy
 }
 import anhnhan.parser.parsec.string {
     backslashEscapable,
@@ -54,19 +57,27 @@ import ceylon.language {
     _or=or
 }
 import ceylon.test {
-    test
+    test,
+    assertEquals
 }
 
 shared
 StringParser<Nodes<Character>> parseGrammar
-        = nodeParser("Grammar", leftRrightS(oneOrMore(parseRule), label(emptyLiteral<Character>, "This probably means that we failed parsing pre-maturely.")));
+        = nodeParser(
+            "Grammar",
+            leftRrightS(
+                zeroOrMore(parseRule),
+                label(
+                    emptyLiteral<Character>,
+                    "This probably means that we failed parsing pre-maturely."
+                )
+            )
+        );
 
 StringParser<[]> ignores
         = ignore(manyOf(
             whitespace,
-            pComment,
-            // Some grammars write their rules like A + B + C. Just ignore them.
-            literal('+')
+            pComment
         ));
 StringParser<Literal> s_ign<Literal>(StringParser<Literal> parser)
         => ignoreSurrounding<Literal, Character>(ignores)(parser);
@@ -97,10 +108,7 @@ StringParser<Nodes<Character>> parseRule
                 ruleStart,
                 nodeParser(
                     "Expressions",
-                    until(
-                        or(ruleStart, emptyLiteral<Character>),
-                        expression
-                    )
+                    oneOrMore(expression)
                 )
             )
         );
@@ -110,34 +118,37 @@ void testParseRule()
 {
     {
         "S:S",
-        "S := 'hi' B C"
+        "S := 'hi' B C",
+        "S: | A B
+            | C D
+            | E F"
     }.collect(assertCanParseWithNothingLeft(parseRule));
     {
         "S:S S:S",
-        "A:B+C|D+E+F:G"
-    }.collect(assertCanParseWithNothingLeft(oneOrMore(parseRule))).collect(print);
+        "A:B C|D E Y:Z"
+    }.collect(assertCanParseWithNothingLeft(oneOrMore(parseRule)));
 }
 
 StringParseResult<ParseTree<Character>> expression(Characters input)
-        => s_ign(or(
+        => s_ign(anyOf(
             alternation,
-            atomarExpressions
+            // For these three it would be cool if we could memoize / real lookahead
+            optionalSingle,
+            repetitionSingle,
+            oneOrMoreSingle,
+            atomarExpression
         ))(input);
 
 StringParser alternationChar = or(literal('|'), literal('/'));
 
 StringParser<ParseTree<Character>> alternation
-        = nodeParser(
-            "Alternation",
-            oneOrMore<ParseTree<Character>, Character>(
-                nodeParser(
-                    "Branch",
-                    right(
-                        s_ign(ignore(alternationChar)),
-                        oneOrMore<ParseTree<Character>, Character>(
-                            atomarExpression
-                        )
-                    )
+        = right(
+            s_ign(ignore(alternationChar)),
+            nodeParser(
+                "Alternation",
+                separatedBy(
+                    nodeParser("Branch", oneOrMore(s_ign(atomarExpression))),
+                    s_ign(alternationChar)
                 )
             )
         );
@@ -150,25 +161,58 @@ void testAlternation()
         "A B|C",
         "A B | (C|D)"
     }.collect(assertCanParseWithNothingLeft(alternation));
+
+    value result1 = alternation("A B C | D foo := bar");
+    assertEquals(result1.rest, "foo := bar");
 }
 
-StringParser<ParseTree<Character>> atomarExpressions
-        = nodeParser("Expressions", oneOrMore(s_ign(atomarExpression)));
-
 "Like [[expression]], but without alternation, infix or postfix operators, or
- any other parsers causing left-recursives trouble."
+ any other parsers causing left-recursives trouble.
+
+ Oh, and they are pretty much single-element."
 StringParser<ParseTree<Character>> atomarExpression
-        = left(anyOf(
+        = anyOf(
             pSingleQuoteString,
             pDoubleQuoteString,
             pHiddenElement,
             pGroup,
+            optionalGroup,
             pEpsilon,
-            name
-        ), or(ruleStart, emptyLiteral<Character>));
+            left(name, s_ign(not(ruleChar)))
+        );
 
 StringParser<Token<Character>> name
         = expected(tokenParser("Name", manySatisfy(_or(Character.letter, Character.digit))), "name");
+
+StringParser<Nodes<Character>> optionalSingle
+        = nodeParser(
+            "Optional",
+            apply(
+                leftRrightS(atomarExpression, literal('?')),
+                (ParseTree<Character> tree) => [tree]
+            )
+        );
+
+StringParser<Nodes<Character>> optionalGroup
+        = nodeParser("Optional", between(s_ign(literal('[')), expression, s_ign(literal(']'))));
+
+StringParser<Nodes<Character>> repetitionSingle
+        = nodeParser(
+            "ZeroOrMore",
+            apply(
+                leftRrightS(atomarExpression, literal('*')),
+                (ParseTree<Character> tree) => [tree]
+            )
+        );
+
+StringParser<Nodes<Character>> oneOrMoreSingle
+        = nodeParser(
+            "OneOrMore",
+            apply(
+                leftRrightS(atomarExpression, literal('+')),
+                (ParseTree<Character> tree) => [tree]
+            )
+        );
 
 StringParser<Token<Character>> pEpsilon
         = tokenParser("Epsilon", anyOf(
