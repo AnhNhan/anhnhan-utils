@@ -12,7 +12,7 @@ ParseResult<[], InputElement> lookahead<Literal, InputElement>(Parser<Literal, I
         => parser(input).bind(
                 (_ok) => ok([], input),
                 // Converting error since type has to fit
-                (error) => error.toJustError
+                (error) => error.toJustError.appendMessage("Lookahead failed.")
             );
 
 shared

@@ -23,6 +23,6 @@ ParseResult<Return, InputElement> applyR<Literal, InputElement, Return>(ParseRes
     }
     case (is Error<Literal, InputElement>)
     {
-        return _result.toJustError.appendMessage("Consequence: Did not apply function.");
+        return _result.toJustError.appendMessage("Apply: Did not apply function to result.");
     }
 }
