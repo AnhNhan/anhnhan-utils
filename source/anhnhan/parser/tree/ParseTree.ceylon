@@ -18,6 +18,9 @@ interface ParseTree<out InputElement>
 {
     shared formal
     String name;
+
+    shared formal
+    String render(Integer level = 0);
 }
 
 shared
@@ -43,7 +46,10 @@ class TokenObj<InputElement>(
     InputElement[] token
 )
         satisfies Token<InputElement>
-{}
+{
+    shared actual
+    String render(Integer level) => "> ``name``=>``token``\n";
+}
 
 class NodesObj<InputElement>(
     shared actual
@@ -52,7 +58,13 @@ class NodesObj<InputElement>(
     ParseTree<InputElement>[] nodes
 )
         satisfies Nodes<InputElement>
-{}
+{
+    shared actual
+    String render(Integer level)
+            => "{  ``name`` =>
+                    ``nodes*.render(level + 1)*.lines*.map((_) => _.padLeading((level + 1) * 4))*.interpose("\n").fold<{String*}>({})(uncurry(Iterable<String>.chain<String, Null>)).fold("")(plus<String>)``
+                }";
+}
 
 shared
 Token<InputElement> token<InputElement>(String tokenName)({InputElement*} lits)
