@@ -79,3 +79,7 @@ StringParser hex
 shared
 StringParser<Character[]> keyword({Character*} keyword)
         => left(literals(String(keyword)), negativeLookahead(ignoreWhitespace));
+
+shared
+StringParser letterOrDigit
+        = satisfy(isLetterOrDigit);
