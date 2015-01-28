@@ -20,19 +20,20 @@ import ceylon.test {
 
 "Excerpt from Wikipedia:
 
-     A [Bloom filter][1] is a space-efficient probabilistic data structure,
-     conceived by Burton Howard Bloom in 1970, that is used to test whether an
-     element is a member of a set. False positive matches are possible, but
-     false negatives are not; i.e. a query returns either \"possibly in set\" or
-     \"definitely not in set\". Elements can be added to the set, but not removed
-     (though this can be addressed with a \"counting\" filter). The more elements
-     that are added to the set, the larger the probability of false positives.
-
-     [1]: http://en.wikipedia.org/wiki/Bloom_filter
+ >   A [Bloom filter][1] is a space-efficient probabilistic data structure,
+ >   conceived by Burton Howard Bloom in 1970, that is used to test whether an
+ >   element is a member of a set. False positive matches are possible, but
+ >   false negatives are not; i.e. a query returns either \"possibly in set\" or
+ >   \"definitely not in set\". Elements can be added to the set, but not
+ >   removed (though this can be addressed with a \"counting\" filter). The more
+ >   elements that are added to the set, the larger the probability of false
+ >   positives.
+ >
+ >   [1]: http://en.wikipedia.org/wiki/Bloom_filter
 
  More info for bloom filters and the workings of their magic:
 
-     http://www.michaelnielsen.org/ddi/why-bloom-filters-work-the-way-they-do/
+ >   http://www.michaelnielsen.org/ddi/why-bloom-filters-work-the-way-they-do/
 "
 shared class BloomFilter<Key, Hash_t>(size, hash_functions)
     satisfies Category<Key>
@@ -58,18 +59,7 @@ shared class BloomFilter<Key, Hash_t>(size, hash_functions)
      we can guarantee that it is not in the set."
     shared actual Boolean contains(Key key)
     {
-        for (fun in hash_functions)
-        {
-            // If any of the bits at offsets indicated by the hash functions
-            // are zero, we can be sure that the key is not in the set.
-            if (!check_offset(fun(key)))
-            {
-                return false;
-            }
-        }
-
-        // All one's. It's maybe in the set.
-        return true;
+        return every {for (fun in hash_functions) check_offset(fun(key))};
     }
 
     "Adds an element to the set."
@@ -91,17 +81,7 @@ shared class BloomFilter<Key, Hash_t>(size, hash_functions)
 
     shared actual String string
     {
-        variable String s = "0b";
-
-        for (byte in buffer)
-        {
-            for (nn in 7..0)
-            {
-                s += byte.get(nn) then "1" else "0";
-            }
-        }
-
-        return s;
+        return String {'0', 'b', *{for (byte in buffer) for (nn in 7..0) byte.get(nn) then '1' else '0'}};
     }
 }
 

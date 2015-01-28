@@ -39,7 +39,7 @@ shared class LCG(
 
     variable Integer xn = x0;
 
-    shared Integer random(Integer maximum) {
+    shared Integer random(Integer maximum = runtime.maxIntegerValue) {
         //xn = (a * xn + c) % m;
         variable value numerator = a * xn + c;
         if (numerator < 0) {
@@ -51,6 +51,16 @@ shared class LCG(
         // TODO should be inclusive of the maximum
         return xn % maximum;
     }
+
+    by("Anh Nhân <anhnhan@outlook.com>")
+    shared Float nextFloat()
+            // Arbitrary multiplication and divison of arbitrarily large numbers
+            // Change every few months to upkeep randomness
+            => random() * random().float * runtime.maxIntegerValue / random();
+
+    "Alias for [[LCG.random]] out of bc reasons.."
+    shared Integer nextInteger(Integer maximum = runtime.maxIntegerValue)
+            => random(maximum);
 
     "This LCG equals the given object if `other` is an LCG with
      the same values for parameters `a`, `c` and `m`.

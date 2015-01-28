@@ -41,7 +41,11 @@ shared Element transposeAndJoin<Element>(Element interpose)({Element+} elements)
     return joinAll(_);
 }
 
-shared Element|Absent pick_random<Element, Absent>(Iterable<Element, Absent> list, Integer random(Integer maximum))
+shared Element|Absent pick_random<Element, Absent>(
+    Iterable<Element, Absent> list,
+    "An RNG function or delegate with a range of 0..[[maximum]]-1."
+    Integer random(Integer maximum)
+)
         given Absent satisfies Null
 {
     switch (list.size)

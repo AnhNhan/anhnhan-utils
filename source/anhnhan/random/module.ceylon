@@ -6,4 +6,10 @@
     Software provided as-is, no warranty
  */
 
-module anhnhan.random "dev" {}
+module anhnhan.random "dev"
+{
+    import anhnhan.utils "0.1";
+
+    optional
+    import ceylon.test "1.1.0";
+}
