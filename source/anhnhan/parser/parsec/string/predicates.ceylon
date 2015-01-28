@@ -16,5 +16,3 @@ CharacterPredicate isAsciiLetter = (Character char) => isAsciiLower(char) || isA
 
 CharacterPredicate isDigit = (Character char) => char in '0'..'9';
 CharacterPredicate isHex = (Character char) => isDigit(char) || char in 'a'..'f' || char in 'A'..'F';
-
-CharacterPredicate isLetterOrDigit = or(isLetter, isDigit);

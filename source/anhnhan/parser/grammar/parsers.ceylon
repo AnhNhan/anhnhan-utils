@@ -6,6 +6,9 @@
     Software provided as-is, no warranty
  */
 
+import anhnhan.parser {
+    Characters
+}
 import anhnhan.parser.parsec {
     anyOf,
     literals,
@@ -127,7 +130,7 @@ void testParseRule()
     }.collect(assertCanParseWithNothingLeft(oneOrMore(parseRule)));
 }
 
-StringParseResult<ParseTree<Character>> expression({Character*} input)
+StringParseResult<ParseTree<Character>> expression(Characters input)
         => s_ign(anyOf(
             alternation,
             suffixedAtomarExpression
@@ -221,7 +224,7 @@ void testPGroup()
     }.collect(assertCanParseWithNothingLeft(pGroup));
 }
 
-StringParseResult<Token<Character>> pComment({Character*} input)
+StringParseResult<Token<Character>> pComment(Characters input)
         => tokenParser("Comment", or(
             between(literals("(*"), anyLiteral<Character>, literals("*)")),
             between(literals("/*"), anyLiteral<Character>, literals("*/"))
@@ -241,7 +244,7 @@ void testPComment()
     strs.collect(assertCanParseWithNothingLeft(pComment));
 }
 
-StringParseResult<ParseTree<Character>> suffixedAtomarExpression({Character*} input)
+StringParseResult<ParseTree<Character>> suffixedAtomarExpression(Characters input)
         => atomarExpression(input).bind
         {
             (exprOk)

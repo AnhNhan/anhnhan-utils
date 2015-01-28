@@ -1,4 +1,3 @@
-
 /**
     Anh Nhan's utilities library
 
@@ -53,14 +52,6 @@ interface ParseResult<out Result, out InputElement>
     shared default
     ParseResult<Result, InputElement> expectedLabel(String expected)
             => label("Expected: ``expected``");
-
-    shared default
-    ParseResult<FunResult, InputElement> applyOnResult<FunResult>(FunResult transform(Result element))
-            => applyR(this, transform);
-
-    shared default
-    Boolean isSuccessful
-            => this is Ok<Result, InputElement>;
 }
 
 shared
