@@ -26,4 +26,4 @@
 
    Enter the `anhnhan.parser.parsec.tree` package.
    """
-shared package anhnhan.parser.tree;
+shared package de.anhnhan.parser.tree;

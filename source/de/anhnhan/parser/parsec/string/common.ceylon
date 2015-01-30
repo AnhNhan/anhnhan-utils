@@ -6,17 +6,17 @@
     Software provided as-is, no warranty
  */
 
-import anhnhan.parser.parsec {
+import de.anhnhan.parser.parsec {
     Parser,
     ParseResult
 }
 
 shared
-alias StringParseResult<Literal = Character>
+alias StringParseResult<out Literal = Character>
         => ParseResult<Literal, Character>;
 
 shared
-interface StringParser<Literal = Character>
+interface StringParser<out Literal = Character>
         => Parser<Literal, Character>;
 
 shared

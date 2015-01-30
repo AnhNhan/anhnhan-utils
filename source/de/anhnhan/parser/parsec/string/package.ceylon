@@ -6,6 +6,4 @@
     Software provided as-is, no warranty
  */
 
-"Contains utilities for testing parsers."
-shared
-package anhnhan.parser.parsec.test;
+shared package de.anhnhan.parser.parsec.string;

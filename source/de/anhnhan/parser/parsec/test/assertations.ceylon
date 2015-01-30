@@ -6,14 +6,14 @@
     Software provided as-is, no warranty
  */
 
-import anhnhan.parser.parsec {
+import ceylon.test {
+    assertTrue
+}
+
+import de.anhnhan.parser.parsec {
     Parser,
     Ok,
     Error
-}
-
-import ceylon.test {
-    assertTrue
 }
 
 shared
@@ -37,4 +37,19 @@ Ok<Literal, InputElement> assertCanParseWithNothingLeft<Literal, InputElement>(P
     value result = assertCanParse(parser)(input);
     assertTrue(result.rest.empty, "Parser failed to consume the whole input for <\"``input``\">: remaining was <\"``result.rest``\">");
     return result;
+}
+
+shared
+Error<Literal, InputElement> assertCantParse<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
+{
+    value result = parser(input);
+    switch (result)
+    case (is Ok<Literal, InputElement>)
+    {
+        throw AssertionError("Given parser did not fail for input <\"``input``\">: resulted in ``result``");
+    }
+    case (is Error<Literal, InputElement>)
+    {
+        return result;
+    }
 }

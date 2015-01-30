@@ -6,10 +6,10 @@
     Software provided as-is, no warranty
  */
 
-import anhnhan.parser.parsec.test {
+import de.anhnhan.parser.parsec.test {
     assertCanParseWithNothingLeft
 }
-import anhnhan.parser.tree {
+import de.anhnhan.parser.tree {
     nodes,
     token,
     ParseTree

@@ -6,7 +6,7 @@
     Software provided as-is, no warranty
  */
 
-import anhnhan.parser.parsec.string {
+import de.anhnhan.parser.parsec.string {
     skipWhitespace,
     whitespace
 }

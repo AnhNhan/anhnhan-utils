@@ -7,4 +7,4 @@
  */
 
 "A not quite-close-to-original implementation of parser combinators and additional useful tools in Ceylon."
-shared package anhnhan.parser.parsec;
+shared package de.anhnhan.parser.parsec;

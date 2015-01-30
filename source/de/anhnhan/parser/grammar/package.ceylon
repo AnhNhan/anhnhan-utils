@@ -15,4 +15,4 @@
    * (E)BNF
    * PEG-like
    * custom ones"
-shared package anhnhan.parser.grammar;
+shared package de.anhnhan.parser.grammar;

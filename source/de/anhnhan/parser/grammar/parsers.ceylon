@@ -6,7 +6,7 @@
     Software provided as-is, no warranty
  */
 
-import anhnhan.parser.parsec {
+import de.anhnhan.parser.parsec {
     anyOf,
     literals,
     literal,
@@ -30,16 +30,16 @@ import anhnhan.parser.parsec {
     separatedBy,
     ok
 }
-import anhnhan.parser.parsec.string {
+import de.anhnhan.parser.parsec.string {
     backslashEscapable,
     whitespace,
     StringParser,
     StringParseResult
 }
-import anhnhan.parser.parsec.test {
+import de.anhnhan.parser.parsec.test {
     assertCanParseWithNothingLeft
 }
-import anhnhan.parser.tree {
+import de.anhnhan.parser.tree {
     nodeParser,
     tokenParser,
     Nodes,
