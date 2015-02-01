@@ -6,6 +6,10 @@
     Software provided as-is, no warranty
  */
 
+import ceylon.collection {
+    group
+}
+
 shared {Elements*} chainAll<Elements>({Elements*}+ iterators)
     given Elements satisfies Object
 {
@@ -40,6 +44,11 @@ shared Element transposeAndJoin<Element>(Element interpose)({Element+} elements)
     assert(nonempty _);
     return joinAll(_);
 }
+
+"This function assumes a reasonable equality behavior for the given types."
+shared Map<Element, [Element+]> duplicates<Element>({Element*} input)
+        given Element satisfies Object
+        => group(input, identity<Element>);
 
 shared Element|Absent pick_random<Element, Absent>(
     Iterable<Element, Absent> list,
