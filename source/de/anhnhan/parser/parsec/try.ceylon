@@ -22,3 +22,11 @@ ParseResult<Returns, InputElement> tryAndAct<Literals, Returns, InputElement>(pa
 
     return JustError(input, ["None of the parsers we tried out matched."]);
 }
+
+shared
+ParseResult<Literal?, InputElement> tryWhen<Literal, InputElement>(Parser<Anything, InputElement> matchP, Parser<Literal, InputElement> mainP)({InputElement*} input)
+        => matchP(input).bind
+        {
+            (matchR) => mainP(matchR.rest);
+            (_) => ok(null, input);
+        };

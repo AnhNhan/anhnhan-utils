@@ -6,6 +6,10 @@
     Software provided as-is, no warranty
  */
 
+import ceylon.language {
+    ceylon_not=not
+}
+
 import de.anhnhan.parser.parsec {
     literal,
     skipLiteral,
@@ -15,7 +19,6 @@ import de.anhnhan.parser.parsec {
     zeroOrMore,
     ignore,
     literals,
-    negativeLookahead,
     left,
     ignoreSurrounding
 }
@@ -78,7 +81,7 @@ StringParser hex
 
 shared
 StringParser<Character[]> keyword({Character*} keyword)
-        => left(literals(String(keyword)), negativeLookahead(ignoreWhitespace));
+        => left(literals(String(keyword)), satisfy(ceylon_not(isLetterOrDigit)));
 
 shared
 StringParser letterOrDigit

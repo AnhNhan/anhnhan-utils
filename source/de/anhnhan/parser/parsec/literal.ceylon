@@ -45,12 +45,22 @@ void testLiteral()
 }
 
 shared
-ParseResult<Literal[], Literal> literals<Literal>(List<Literal> literals, Integer insteadTakeExtra = 5)({Literal*} input)
+ParseResult<[Literal+], Literal> literals<Literal>(List<Literal> literals, Integer insteadTakeExtra = 5)({Literal*} input)
         given Literal satisfies Object
 {
     value sequence = literals.sequence();
+    assert (nonempty sequence);
     value str = input.take(literals.size);
-    value error = ExpectedLiteral<Literal[], Literal>(sequence, input.take(literals.size + insteadTakeExtra).sequence(), input);
+    [Literal+]? instead;
+    if (nonempty _instead = input.take(literals.size + insteadTakeExtra).sequence())
+    {
+        instead = _instead;
+    }
+    else
+    {
+        instead = null;
+    }
+    value error = ExpectedLiteral<[Literal+], Literal>(sequence, instead, input);
 
     if (str.size.smallerThan(literals.size))
     {

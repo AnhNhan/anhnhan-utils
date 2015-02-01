@@ -7,14 +7,14 @@
  */
 
 shared
-ParseResult<Return, InputElement> apply<Literal, InputElement, Return>(Parser<Literal, InputElement> parser, Return(Literal) fun)({InputElement*} input)
+ParseResult<Return, InputElement> apply<Literal, InputElement, Return>(Parser<Literal, InputElement> parser, Return fun(Literal literal))({InputElement*} input)
 {
     value _result = parser(input);
     return applyR(_result, fun);
 }
 
 shared
-ParseResult<Return, InputElement> applyR<Literal, InputElement, Return>(ParseResult<Literal, InputElement> _result, Return(Literal) fun)
+ParseResult<Return, InputElement> applyR<Literal, InputElement, Return>(ParseResult<Literal, InputElement> _result, Return fun(Literal literal))
 {
     switch (_result)
     case (is Ok<Literal, InputElement>)
