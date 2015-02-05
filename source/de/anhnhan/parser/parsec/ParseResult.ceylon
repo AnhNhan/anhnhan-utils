@@ -182,7 +182,7 @@ interface Error<out Result, out InputElement>
     }
 
     shared default
-    JustError<Nothing, InputElement> toJustError
+    Error<Nothing, InputElement> toJustError
             => JustError(this.rest, this.messages);
 }
 
@@ -309,7 +309,7 @@ class MultitudeOfErrors<out Result, out InputElement>(errors, String[] _messages
         satisfies Error<Result, InputElement>
 {
     shared
-    [Error<Result, InputElement>+] errors;
+    [Error<Anything, InputElement>+] errors;
 
     shared actual String[] messages
             = errors*.messages
@@ -318,6 +318,8 @@ class MultitudeOfErrors<out Result, out InputElement>(errors, String[] _messages
 
     shared actual {InputElement*} rest
             = errors.max((x, y) => x.messages.size <=> y.messages.size).rest;
+
+    toJustError => MultitudeOfErrors(errors, _messages);
 
     string => "MultitudeOfErrors(``errors``, ``_messages``)";
 

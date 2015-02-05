@@ -80,8 +80,23 @@ Ok<Literal[], InputElement> zeroOrMoreInterleaved<Literal, InputElement>(Parser<
 
 // Success may be skewed due to possibly containing empty results.
 shared
-ParseResult<[Literal+], InputElement> oneOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} str)
-        => forceMany(zeroOrMore<Literal, InputElement>(parser)(str));
+ParseResult<[Literal+], InputElement> oneOrMore<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
+{
+    value result = zeroOrMore(parser)(input);
+
+    value seq = result.result;
+    switch (seq)
+    case (is [Literal+])
+    {
+        return ok(seq, result.rest);
+    }
+    case (is [])
+    {
+        value error = parser(input);
+        assert (is Error<Anything, InputElement> error);
+        return error.toJustError.appendMessage("Expected at least a single match.");
+    }
+}
 
 shared
 ParseResult<[Literal+], InputElement> oneOrMoreInterleaved<Literal, InputElement>(Parser<Anything, InputElement> interleave)(Parser<Literal, InputElement> parser)({InputElement*} str)
