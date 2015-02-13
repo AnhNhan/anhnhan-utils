@@ -77,7 +77,7 @@ test
 void test0005()
 {
     value str1 = "abc def\n";
-    value parse = sequence(manySatisfy(Character.letter), lookahead(satisfy(Character.whitespace)));
+    value parse = sequence(manySatisfy(Character.letter), nextIs(satisfy(Character.whitespace)));
 
     value pass1 = parse(str1);
     assert(is Ok<Character[][], Character> pass1);
@@ -89,11 +89,11 @@ void test0005()
     assertEquals(pass2, ok([['d', 'e', 'f'], []], "\n"));
 
     value str3 = pass2.rest;
-    value pass3 = negativeLookahead(whitespace)(str3);
+    value pass3 = nextIsnt(whitespace)(str3);
     assert(is Error<Character[], Character> pass3);
     assertEquals(pass3.rest, "\n");
 
-    value pass4 = lookahead(whitespace)(str3);
+    value pass4 = nextIs(whitespace)(str3);
     assert(is Ok<Character[], Character> pass4);
     assertEquals(pass4.rest, str3);
 }
