@@ -6,16 +6,26 @@
     Software provided as-is, no warranty
  */
 
+"A parser parses a list of elements and yields a result."
 shared
 interface Parser<out Result, InputElement>
         => ParseResult<Result, InputElement>({InputElement*});
 
+"A ParseResult represents the result of a parse operation. There are two defined
+ states, [[Ok]] and [[Error]], respectively representing successful / failed
+ parse attempts.
+
+ A ParseResult value contains the resulting parser state on the input stream as
+ a stream of the remaining elements.
+
+ It also contains a few useful operations, for example the [[bind]] method to
+ bind transformations on the resulting result / state."
 shared
 interface ParseResult<out Result, out InputElement>
         of Ok<Result, InputElement>
             | Error<Result, InputElement>
 {
-    "The remainder of the input, "
+    "The parser state after applying the parse operation."
     shared formal
     {InputElement*} rest;
 
@@ -62,38 +72,29 @@ interface ParseResult<out Result, out InputElement>
             => this is Ok<Result, InputElement>;
 }
 
+"`Ok` represents a successful parse operation and contains its result."
 shared
 interface Ok<out Result, out InputElement>
         satisfies ParseResult<Result, InputElement>
 {
+    "The result of the parse operation."
     shared formal
     Result result;
 
     string => "Ok(``result else "<end of input>"``, ``rest``)";
-}
-
-shared final
-class OkImpl<out Result, out InputElement>(result, rest)
-        extends Object()
-        satisfies Ok<Result, InputElement>
-{
-    shared actual
-    Result result;
 
     shared actual
-    {InputElement*} rest;
-
-    shared actual Boolean equals(Object that)
+    Boolean equals(Object that)
     {
         if (is OkImpl<Anything, Anything> that)
         {
             Boolean result_same;
 
-            if (exists result)
+            if (exists _result = result)
             {
                 if (exists t_result = that.result)
                 {
-                    result_same = result == t_result;
+                    result_same = _result == t_result;
                 }
                 else
                 {
@@ -115,24 +116,67 @@ class OkImpl<out Result, out InputElement>(result, rest)
             return result_same &&
                 rest==that.rest;
         }
-        else {
+        else
+        {
             return false;
         }
     }
 
-    shared actual Integer hash {
+    shared actual
+    Integer hash
+    {
         variable value hash = 1;
         hash = 31*hash + (result else 1).hash;
         hash = 31*hash + rest.hash;
         return hash;
     }
+}
 
+final
+class OkImpl<out Result, out InputElement>(result, rest)
+        extends Object()
+        satisfies Ok<Result, InputElement>
+{
+    shared actual
+    Result result;
+
+    shared actual
+    {InputElement*} rest;
+}
+
+final
+class StringOk<out Result>(result, rest)
+        extends Object()
+        satisfies Ok<Result, Character>
+        {
+    shared actual
+    Result result;
+
+    shared actual
+    {Character*} rest;
 }
 
 shared
 Ok<Result, InputElement> ok<out Result, out InputElement>(Result result, {InputElement*} rest)
         => OkImpl(result, rest);
 
+shared
+Ok<Result, Character> strOk<out Result>(Result result, {Character*} rest)
+        => StringOk(result, rest);
+
+"Returns a parser that always returns [[result]], no matter the input."
+shared
+Result({InputElement*}) identityParser<Literal, InputElement, Result = ParseResult<Literal, InputElement>>(Result result)
+        given Result satisfies ParseResult<Literal, InputElement>
+        => ({InputElement*} _) => result;
+
+"Represents a failed parse attempt. It contains the parser state ([[rest]]) at
+ the point of failure, and optionally a list of [[messages]] to help in
+ understanding the cause of failure.
+
+ An error generally is specific to a class of results (see [[Result]]
+ parameter), where implementations are free to provide additional information to
+ help debug and understand the cause of failure (e.g. [[ExpectedLiteral]])."
 shared
 interface Error<out Result, out InputElement>
         of ExpectedLiteral<Result, InputElement>
@@ -181,6 +225,7 @@ interface Error<out Result, out InputElement>
         }
     }
 
+    // TODO: Instead of destroying the old value, consider boxing it
     shared default
     Error<Nothing, InputElement> toJustError
             => JustError(this.rest, this.messages);
@@ -201,16 +246,22 @@ class JustError<out Result, out InputElement>(rest, messages = [])
 
     string => "JustError(parseRest='``rest``', messages=``messages``)";
 
-    shared actual Boolean equals(Object that) {
-        if (is JustError<Result, InputElement> that) {
+    shared actual
+    Boolean equals(Object that)
+    {
+        if (is JustError<Result, InputElement> that)
+        {
             return rest==that.rest;
         }
-        else {
+        else
+        {
             return false;
         }
     }
 
-    shared actual Integer hash {
+    shared actual
+    Integer hash
+    {
         variable value hash = 1;
         hash = 31*hash + rest.hash;
         return hash;
@@ -247,18 +298,24 @@ class ExpectedLiteral<out Result, out InputElement>(Result|{Result*} _expected, 
 
     string = "ExpectedLiteral(expected = '``expected``', instead = '``instead else "<null>"``', rest = '``rest``', messages=``messages``)";
 
-    shared actual Boolean equals(Object that) {
-        if (is ExpectedLiteral<Result, InputElement> that) {
+    shared actual
+    Boolean equals(Object that)
+    {
+        if (is ExpectedLiteral<Result, InputElement> that)
+        {
             // Skipping instead is sensible, considering it is only for helping
             return expected==that.expected &&
                 rest==that.rest;
         }
-        else {
+        else
+        {
             return false;
         }
     }
 
-    shared actual Integer hash {
+    shared actual
+    Integer hash
+    {
         variable value hash = 1;
         hash = 31*hash + expected.hash;
         hash = 31*hash + rest.hash;
@@ -281,24 +338,31 @@ class PointOutTheError<out Result, out InputElement>(beforeError, rest, messages
     shared actual
     {InputElement*} rest;
 
-    shared actual Boolean equals(Object that) {
-        if (is PointOutTheError<Result, InputElement> that) {
+    shared actual
+    Boolean equals(Object that)
+    {
+        if (is PointOutTheError<Result, InputElement> that)
+        {
             return beforeError==that.beforeError &&
                 rest==that.rest;
         }
-        else {
+        else
+        {
             return false;
         }
     }
 
-    shared actual Integer hash {
+    shared actual
+    Integer hash
+    {
         variable value hash = 1;
         hash = 31*hash + beforeError.hash;
         hash = 31*hash + rest.hash;
         return hash;
     }
 
-    shared actual String[] messages;
+    shared actual
+    String[] messages;
 
     string = "PointOutTheError(beforeError=``beforeError``, parseRest=``rest``, messages=``messages``)";
 }
@@ -311,28 +375,36 @@ class MultitudeOfErrors<out Result, out InputElement>(errors, String[] _messages
     shared
     [Error<Anything, InputElement>+] errors;
 
-    shared actual String[] messages
+    shared actual
+    String[] messages
             = errors*.messages
                 .append([_messages])
                 .reduce(uncurry(Sequential<String>.append<String>));
 
-    shared actual {InputElement*} rest
+    shared actual
+    {InputElement*} rest
             = errors.max((x, y) => x.messages.size <=> y.messages.size).rest;
 
     toJustError => MultitudeOfErrors(errors, _messages);
 
     string => "MultitudeOfErrors(``errors``, ``_messages``)";
 
-    shared actual Boolean equals(Object that) {
-        if (is MultitudeOfErrors<Result, InputElement> that) {
+    shared actual
+    Boolean equals(Object that)
+    {
+        if (is MultitudeOfErrors<Result, InputElement> that)
+        {
             return errors==that.errors;
         }
-        else {
+        else
+        {
             return false;
         }
     }
 
-    shared actual Integer hash {
+    shared actual
+    Integer hash
+    {
         variable value hash = 1;
         hash = 31*hash + errors.hash;
         return hash;

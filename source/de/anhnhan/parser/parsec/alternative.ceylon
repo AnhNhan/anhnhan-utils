@@ -6,6 +6,8 @@
     Software provided as-is, no warranty
  */
 
+"Attempts to apply the two given parsers in order, and returns the first
+ success, or returns both failures."
 shared
 ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLiteral, InputElement>(firstP, secondP, label = "")({InputElement*} input)
 {
@@ -28,7 +30,7 @@ ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLit
     assert(is Error<FirstLiteral, InputElement> firstR);
     assert(is Error<SecondLiteral, InputElement> secondR);
 
-    return MultitudeOfErrors([firstR, secondR], ["Neither of these matched."]);
+    return MultitudeOfErrors([firstR, secondR], [*(label.empty then [] else [label])]);
 }
 
 "Tries all of the given [[parsers]], one after each other. Returns the result
@@ -57,6 +59,8 @@ ParseResult<Literal, InputElement> anyOf<Literal, InputElement>(Parser<Literal, 
     return MultitudeOfErrors(_errors, ["Could not apply any parsers."]);
 }
 
+"Applies [[anyOf]] repeatedly, the resulting list of results containing at least
+ one element."
 shared
 ParseResult<[Literal+], InputElement> manyOf<Literal, InputElement>(Parser<Literal, InputElement>+ parsers)({InputElement*} input)
         => oneOrMore(anyOf(*parsers))(input);

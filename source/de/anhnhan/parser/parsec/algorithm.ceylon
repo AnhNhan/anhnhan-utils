@@ -6,15 +6,24 @@
     Software provided as-is, no warranty
  */
 
+import ceylon.language {
+    not
+}
+
+"Filters out instances of [[Empty]] out of the result list."
 shared
 ParseResult<Literal[], InputElement> filterEmpty<Literal, InputElement>(ParseResult<Literal[], InputElement> input)
         given Literal satisfies Object
-        => applyR<Literal[], InputElement, Literal[]>(input, (lits) => lits.select((lit) => lit != []));
+        => applyR(input, (Literal[] lits) => lits.select(not([].equals)));
 
-"Success may be skewed due to empty results (e.g. may contain instances of [[Empty]])."
+"Asserts that a given list of results is non-empty. Returns a parse error in
+ case of failure.
+
+ Success may be skewed due to empty results (e.g. may contain instances of [[Empty]])."
 shared
 ParseResult<[Literal+], InputElement> forceMany<Literal, InputElement>(ParseResult<Literal[], InputElement> input, String? label = null)
-        => input.bind<ParseResult<[Literal+], InputElement>, Error<[Literal+], InputElement>> {
+        => input.bind
+            {
                 (_ok)
                 {
                     value result = _ok.result;
@@ -23,7 +32,7 @@ ParseResult<[Literal+], InputElement> forceMany<Literal, InputElement>(ParseResu
                         return ok(result, _ok.rest);
                     }
                     // How to force labeling / add rule-name?
-                    return JustError(_ok.rest, ["Abrupt ending, expected at least one match ``label else ""``"]);
+                    return JustError(_ok.rest, ["Expected at least one match ``label else ""``"]);
                 };
                 (error) => error.toJustError;
             };

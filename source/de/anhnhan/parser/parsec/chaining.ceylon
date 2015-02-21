@@ -177,3 +177,25 @@ ParseResult<Literal[], InputElement> until<Literal, InputElement>(Parser<Anythin
     value seq = list.sequence();
     return ok(seq, _input);
 }
+
+/// Terrible name. That's a TODO.
+shared
+ParseResult<[Literal+], InputElement> parseMultipleCompletelyUsing<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
+{
+    value result = oneOrMore(parser)(input);
+
+    switch (result)
+    case (is Ok<[Literal+], InputElement>)
+    {
+        if (!result.rest.empty)
+        {
+            return JustError(result.rest, ["Could not parse any further."]);
+        }
+
+        return result;
+    }
+    case (is Error<Anything, InputElement>)
+    {
+        return result;
+    }
+}
