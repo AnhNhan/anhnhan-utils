@@ -10,6 +10,8 @@ import ceylon.test {
     test
 }
 
+"Tests whether the given parser is applicable on the current parser state.
+ Returns an empty result and retains the parser state."
 shared
 ParseResult<[], InputElement> nextIs<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
@@ -19,6 +21,7 @@ ParseResult<[], InputElement> nextIs<Literal, InputElement>(Parser<Literal, Inpu
                 (error) => error.toJustError.appendMessage("Lookahead failed.")
             );
 
+// Same as `not`?
 shared
 ParseResult<[], InputElement> nextIsnt<Literal, InputElement>(Parser<Literal, InputElement> parser)({InputElement*} input)
         given Literal satisfies Object
@@ -28,11 +31,26 @@ ParseResult<[], InputElement> nextIsnt<Literal, InputElement>(Parser<Literal, In
                 (error) => ok([], input)
             );
 
+"Attempts a lookahead, and applies the parser if it succeeds. Returns null in
+ case the lookahead did not match."
+see(`function lookahead`)
+shared
+ParseResult<Literal?, InputElement> optionalLookahead<Literal, InputElement>(Parser<Anything, InputElement> matchP, Parser<Literal, InputElement> mainP)({InputElement*} input)
+        => matchP(input).bind
+        {
+            (matchR) => mainP(matchR.rest);
+            (_) => ok(null, input);
+        };
+
 shared
 interface LookaheadHandler<out Literal, InputElement>
 {
     shared formal
     Parser<Anything, InputElement>|Boolean({InputElement*}) lookaheadMatcher;
+
+    "The parser to be applied when the lookahead matches."
+    shared formal
+    Parser<Literal, InputElement> parser;
 
     shared
     Boolean applicable({InputElement*} input)
@@ -52,13 +70,10 @@ interface LookaheadHandler<out Literal, InputElement>
             assert (false);
         }
     }
-
-    shared formal
-    Parser<Literal, InputElement> parser;
 }
 
 shared
-LookaheadHandler<Literal, InputElement> lookaheadCase<Literal, InputElement>(Parser<Anything, InputElement>|Boolean({InputElement*}) matcher, Parser<Literal, InputElement> _parser)
+LookaheadHandler<Literal, InputElement> lookaheadCase<Literal, InputElement>(Parser<Anything, InputElement>|<Boolean({InputElement*})> matcher, Parser<Literal, InputElement> _parser)
 {
     object lookaheadCase
             satisfies LookaheadHandler<Literal, InputElement>
@@ -69,9 +84,14 @@ LookaheadHandler<Literal, InputElement> lookaheadCase<Literal, InputElement>(Par
     return lookaheadCase;
 }
 
+shared
+LookaheadHandler<Literal, InputElement> lookaheadCaseSingleLiteral<Literal, InputElement>(Boolean(InputElement) matcher, Parser<Literal, InputElement> _parser)
+        => lookaheadCase<Literal, InputElement>(satisfy(matcher), _parser);
+
 "Tries out a bunch of lookahead matches, and returns the result for the first
  match we encounter. Lookahead cases are tried out in the order of the
  arguments."
+see(`function optionalLookahead`)
 shared
 ParseResult<Literals, InputElement> lookahead<Literals, InputElement>(LookaheadHandler<Literals, InputElement>+ handlers)({InputElement*} input)
         => { for (handler in handlers) if (handler.applicable(input)) handler.parser(input) }.first else JustError(input, ["No lookahead match found."]);
