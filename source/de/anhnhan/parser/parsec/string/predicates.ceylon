@@ -10,11 +10,11 @@ CharacterPredicate isUpper = Character.uppercase;
 CharacterPredicate isLower = Character.lowercase;
 CharacterPredicate isLetter = Character.letter;
 
-CharacterPredicate isAsciiUpper = (Character char) => char in 'A'..'Z';
-CharacterPredicate isAsciiLower = (Character char) => char in 'a'..'z';
-CharacterPredicate isAsciiLetter = (Character char) => isAsciiLower(char) || isAsciiUpper(char);
+CharacterPredicate isAsciiUpper = ('A'..'Z').contains;
+CharacterPredicate isAsciiLower = ('a'..'z').contains;
+CharacterPredicate isAsciiLetter = or(isAsciiLower, isAsciiUpper);
 
-CharacterPredicate isDigit = (Character char) => char in '0'..'9';
-CharacterPredicate isHex = (Character char) => isDigit(char) || char in 'a'..'f' || char in 'A'..'F';
+CharacterPredicate isDigit = ('0'..'9').contains;
+CharacterPredicate isHex = or(isDigit, or(('a'..'f').contains, ('A'..'F').contains));
 
 CharacterPredicate isLetterOrDigit = or(isLetter, isDigit);
