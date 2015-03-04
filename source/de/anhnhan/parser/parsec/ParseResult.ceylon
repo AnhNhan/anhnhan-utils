@@ -114,7 +114,7 @@ interface Ok<out Result, out InputElement>
             }
 
             return result_same &&
-                rest==that.rest;
+                rest.sequence()==that.rest.sequence();
         }
         else
         {
