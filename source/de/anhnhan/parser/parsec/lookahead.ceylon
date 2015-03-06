@@ -32,7 +32,9 @@ ParseResult<[], InputElement> nextIsnt<Literal, InputElement>(Parser<Literal, In
             );
 
 "Attempts a lookahead, and applies the parser if it succeeds. Returns null in
- case the lookahead did not match."
+ case the lookahead did not match.
+
+ [[mainP]] receives the parse state after applying [[matchP]]."
 see(`function lookahead`)
 shared
 ParseResult<Literal?, InputElement> optionalLookahead<Literal, InputElement>(Parser<Anything, InputElement> matchP, Parser<Literal, InputElement> mainP)({InputElement*} input)
@@ -87,6 +89,11 @@ LookaheadHandler<Literal, InputElement> lookaheadCase<Literal, InputElement>(Par
 shared
 LookaheadHandler<Literal, InputElement> lookaheadCaseSingleLiteral<Literal, InputElement>(Boolean(InputElement) matcher, Parser<Literal, InputElement> _parser)
         => lookaheadCase<Literal, InputElement>(satisfy(matcher), _parser);
+
+"A lookahead handler that always matches. Useful for a catch-all lookahead."
+shared
+LookaheadHandler<Literal, InputElement> lookaheadAlways<Literal, InputElement>(Parser<Literal, InputElement> parser)
+        => lookaheadCase((Anything _) => true, parser);
 
 "Tries out a bunch of lookahead matches, and returns the result for the first
  match we encounter. Lookahead cases are tried out in the order of the
