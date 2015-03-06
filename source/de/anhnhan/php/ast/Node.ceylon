@@ -1,0 +1,101 @@
+/**
+    Ceylon PHP Compiler Backend
+
+    Released under Apache v2.0
+
+    Software provided as-is, no warranty
+ */
+
+import ceylon.collection {
+    MutableMap,
+    HashMap
+}
+
+shared
+interface Node
+        of Name | Expression | Statement | FunctionCallArgument | FunctionDefinitionParameter
+{
+    shared
+    String type => className(this);
+
+    shared formal
+    MutableMap<String, Object> attributes;
+
+    Type? attr<Type>(String key)
+            given Type satisfies Object
+    {
+        if (is Type val = attributes[key])
+        {
+            return val;
+        }
+        return null;
+    }
+
+    shared
+    Integer? line
+            => attr<Integer>("startLine");
+    assign line
+    {
+        if (exists line)
+        {
+            attributes.put("startLine", line);
+        }
+        else
+        {
+            attributes.remove("startLine");
+        }
+    }
+}
+
+shared
+interface SubStatements
+{
+    shared formal
+    {Statement*} statements;
+}
+
+shared
+interface Statement
+        of ClassOrInterface | FunctionOrMethod | Const | Property | Namespace | Return | ExpressionStatement
+        satisfies Node
+{}
+
+shared
+class ExpressionStatement(
+    shared
+    Expression expr,
+    shared actual
+    MutableMap<String, Object> attributes
+            = HashMap<String, Object>()
+)
+        satisfies Statement & Renderable
+{
+    shared actual
+    String render() => "``expr.render()``;";
+}
+
+shared
+interface FunctionOrMethod
+        of Function | Method
+        satisfies Statement & SubStatements
+{
+    shared formal
+    String name;
+
+    shared formal
+    {FunctionDefinitionParameter*} parameters;
+
+    shared formal
+    Boolean byRef;
+}
+
+shared
+interface Expression
+        satisfies Node & Renderable
+{
+}
+
+shared
+interface Scalar
+        satisfies Expression
+{}
