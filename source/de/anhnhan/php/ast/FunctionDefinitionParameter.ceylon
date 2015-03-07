@@ -57,6 +57,6 @@ class FunctionDefinitionParameter(
             expr = "";
         }
 
-        return "``_typeHint````byRef````name````expr``";
+        return "``_typeHint````byRef``$``name````expr``";
     }
 }

@@ -76,3 +76,7 @@ class PropertyReference(
         return "``obj``->``property``";
     }
 }
+
+shared
+PropertyReference thisRef(Expression|String property)
+        => PropertyReference(VariableReference("this"), property);

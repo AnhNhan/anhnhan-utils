@@ -109,10 +109,9 @@ class Const(
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
 )
-        satisfies Statement & Modifyable
+        satisfies Statement & Modifyable & Renderable
 {
-    shared
-    String render() => "``static in modifiers then "static " else ""`` const ``name`` = ``expr.render()``;";
+    render() => "``static in modifiers then "static " else ""`` const ``name`` = ``expr.render()``;";
 }
 
 shared final
@@ -150,13 +149,23 @@ class Property(
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
 )
-        satisfies Statement & Modifyable
+        satisfies Statement & Modifyable & Renderable
 {
-    shared
+    shared actual
     String render()
     {
-        value modifiers = !this.modifiers.empty then (this.modifiers*.render().interpose(" ").fold("")(plus<String>) + " ") else "";
+        {Modifier*} computedModifiers;
+        if (!this.modifiers.containsAny { public, protected })
+        {
+            computedModifiers = {private, *modifiers};
+        }
+        else
+        {
+            computedModifiers = this.modifiers;
+        }
+
+        value _modifiers = !computedModifiers.empty then (computedModifiers*.render().interpose(" ").fold("")(plus<String>) + " ") else "";
         value expr = default exists then " = ``default?.render() else nothing``" else "";
-        return "``modifiers``$``name````expr``;";
+        return "``_modifiers``$``name````expr``;";
     }
 }

@@ -18,19 +18,24 @@ import de.anhnhan.php.ast {
     Statement,
     FunctionOrMethod,
     Return,
-    ExpressionStatement
+    ExpressionStatement,
+    Use
 }
 
 String indent(Integer depth, String pad = "    ")
         => pad.repeat(depth);
 
 String padLines(Integer depth, String pad = "    ")(String str)
-        => str.lines.map((line) => indent(depth) + line).fold("")(plus<String>);
+        => str.linesWithBreaks.map((line) => indent(depth) + line).fold("")(plus<String>);
 
 shared
 String renderStatement(Statement stmt, Integer scopeDepth = 0)
 {
     switch (stmt)
+    case (is Const | Use | Property | ExpressionStatement)
+    {
+        return indent(scopeDepth) + stmt.render();
+    }
     case (is Class | Interface)
     {
         return renderClassOrInterface(stmt, scopeDepth);
@@ -39,10 +44,6 @@ String renderStatement(Statement stmt, Integer scopeDepth = 0)
     {
         return renderFunctionOrMethod(stmt, scopeDepth);
     }
-    case (is Property)
-    {
-        return indent(scopeDepth) + stmt.render();
-    }
     case (is Namespace)
     {
         return padLines(scopeDepth)("namespace ``stmt.name.render()``
@@ -50,17 +51,9 @@ String renderStatement(Statement stmt, Integer scopeDepth = 0)
                                      ``stmt.statements.map(renderStatementInv(1)).interpose("\n").fold("")(plus<String>)``
                                      }");
     }
-    case (is Const)
-    {
-        return indent(scopeDepth) + stmt.render();
-    }
     case (is Return)
     {
         return indent(scopeDepth) + "return ``stmt.expr?.render() else ""``;";
-    }
-    case (is ExpressionStatement)
-    {
-        return indent(scopeDepth) + stmt.render() + ";";
     }
 }
 

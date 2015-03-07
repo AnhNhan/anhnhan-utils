@@ -7,8 +7,11 @@
  */
 
 import ceylon.collection {
-    MutableMap,
-    HashMap
+    MutableMap
+}
+
+import de.anhnhan.php.ast {
+    ExpressionStatement
 }
 
 shared
@@ -56,23 +59,9 @@ interface SubStatements
 
 shared
 interface Statement
-        of ClassOrInterface | FunctionOrMethod | Const | Property | Namespace | Return | ExpressionStatement
+        of ClassOrInterface | FunctionOrMethod | Const | Property | Namespace | Return | ExpressionStatement | Use
         satisfies Node
 {}
-
-shared
-class ExpressionStatement(
-    shared
-    Expression expr,
-    shared actual
-    MutableMap<String, Object> attributes
-            = HashMap<String, Object>()
-)
-        satisfies Statement & Renderable
-{
-    shared actual
-    String render() => "``expr.render()``;";
-}
 
 shared
 interface FunctionOrMethod

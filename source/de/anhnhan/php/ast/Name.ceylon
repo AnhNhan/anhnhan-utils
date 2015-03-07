@@ -15,11 +15,11 @@ shared final
 class Name(
     shared
     [String+] parts,
+    shared
+    Boolean relative = true,
     shared actual
     MutableMap<String, Object> attributes
-            = HashMap<String, Object>(),
-    shared
-    Boolean relative = false
+            = HashMap<String, Object>()
 )
         satisfies Node & Renderable
 {
@@ -30,7 +30,7 @@ class Name(
 
     shared actual
     String render()
-            => parts.interpose("\\").fold("")(plus<String>);
+            => String((relative then "" else "\\").chain { parts.interpose("\\").fold("")(plus<String>); });
 
     shared
     Boolean unqualified = parts.size == 1;
