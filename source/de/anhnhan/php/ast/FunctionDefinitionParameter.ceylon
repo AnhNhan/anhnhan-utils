@@ -11,6 +11,15 @@ import ceylon.collection {
     MutableMap
 }
 
+shared
+interface SpecialTypeHints
+        of callable | array
+        satisfies Renderable
+{}
+
+shared object callable satisfies SpecialTypeHints { render() => "callable"; }
+shared object array satisfies SpecialTypeHints { render() => "array"; }
+
 shared final
 class FunctionDefinitionParameter(
     shared
@@ -18,7 +27,7 @@ class FunctionDefinitionParameter(
     shared
     Expression? defaultValue = null,
     shared
-    String|Name? typeHint = null,
+    String|Name|SpecialTypeHints? typeHint = null,
     shared
     Boolean byRef = false,
     shared actual
@@ -42,7 +51,7 @@ class FunctionDefinitionParameter(
         {
             _typeHint = typeHint + " ";
         }
-        case (is Name)
+        case (is Name|SpecialTypeHints)
         {
             _typeHint = typeHint.render() + " ";
         }
