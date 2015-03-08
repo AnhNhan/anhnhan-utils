@@ -114,6 +114,13 @@ class Const(
     render() => "``static in modifiers then "static " else ""`` const ``name`` = ``expr.render()``;";
 }
 
+"For class and interface members, not for classes and interfaces themselves."
+shared
+{Modifier*} preprocessModifiers({Modifier*} modifiers)
+        => !modifiers.containsAny { public, protected }
+            then {private, *modifiers}
+            else modifiers;
+
 shared final
 class Method(
     shared
@@ -154,15 +161,7 @@ class Property(
     shared actual
     String render()
     {
-        {Modifier*} computedModifiers;
-        if (!this.modifiers.containsAny { public, protected })
-        {
-            computedModifiers = {private, *modifiers};
-        }
-        else
-        {
-            computedModifiers = this.modifiers;
-        }
+        {Modifier*} computedModifiers = preprocessModifiers(modifiers);
 
         value _modifiers = !computedModifiers.empty then (computedModifiers*.render().interpose(" ").fold("")(plus<String>) + " ") else "";
         value expr = default exists then " = ``default?.render() else nothing``" else "";

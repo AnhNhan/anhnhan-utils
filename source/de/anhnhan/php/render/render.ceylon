@@ -19,7 +19,8 @@ import de.anhnhan.php.ast {
     FunctionOrMethod,
     Return,
     ExpressionStatement,
-    Use
+    Use,
+    preprocessModifiers
 }
 
 String indent(Integer depth, String pad = "    ")
@@ -66,7 +67,7 @@ String renderFunctionOrMethod(FunctionOrMethod obj, Integer scopeDepth = 0)
     String modifiers;
     if (is Method obj)
     {
-        modifiers = obj.modifiers*.render().interpose(" ").fold("")(plus<String>) + " ";
+        modifiers = preprocessModifiers(obj.modifiers)*.render().interpose(" ").fold("")(plus<String>) + " ";
     }
     else
     {
