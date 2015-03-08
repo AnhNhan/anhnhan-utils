@@ -51,9 +51,13 @@ class PropertyReference(
         String obj;
         String property;
 
-        if (is VariableReference|FunctionInvocation objExpr)
+        if (is VariableReference|PropertyReference|FunctionInvocation objExpr)
         {
             obj = objExpr.render();
+        }
+        else if (is NewObject objExpr)
+        {
+            obj = "(``objExpr.render()``)";
         }
         else
         {
@@ -64,7 +68,7 @@ class PropertyReference(
         {
             property = prop;
         }
-        else if (is VariableReference|FunctionInvocation prop = this.property)
+        else if (is VariableReference|PropertyReference|FunctionInvocation prop = this.property)
         {
             property = "{``prop.render()``}";
         }
@@ -80,3 +84,13 @@ class PropertyReference(
 shared
 PropertyReference thisRef(Expression|String property)
         => PropertyReference(VariableReference("this"), property);
+
+"Alias for writing less in more time."
+shared
+VariableReference(String, MutableMap<String, Object>=) varRef
+        = `VariableReference`;
+
+"Alias for writing less in more time."
+shared
+PropertyReference(Expression, Expression|String, MutableMap<String, Object>=) propRef
+        = `PropertyReference`;
