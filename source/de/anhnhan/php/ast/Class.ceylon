@@ -46,6 +46,9 @@ interface ClassOrInterface
     shared formal
     Name[] implements;
 
+    shared formal
+    {DocAnnotation*} annotations;
+
     shared
     Boolean abstract
             => _abstract in (this of Modifyable).modifiers;
@@ -63,6 +66,8 @@ class Class(
     Name[] implements = [],
     shared actual
     {Statement*} statements = [],
+    shared actual
+    {DocAnnotation*} annotations = {},
     shared actual
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
@@ -85,6 +90,8 @@ class Interface(
     Name[] implements = [],
     shared actual
     {Statement*} statements = [],
+    shared actual
+    {DocAnnotation*} annotations = {},
     shared actual
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
@@ -126,7 +133,9 @@ class Method(
     shared
     Function func,
     shared actual
-    {Modifier*} modifiers,
+    {Modifier*} modifiers = {},
+    shared
+    {DocAnnotation*} annotations = {},
     shared actual
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
@@ -152,6 +161,8 @@ class Property(
     Expression? default = null,
     shared actual
     {Modifier*} modifiers = {},
+    shared
+    {DocAnnotation*} annotations = {},
     shared actual
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()

@@ -16,7 +16,7 @@ import de.anhnhan.php.ast {
 
 shared
 interface Node
-        of Name | Expression | Statement | FunctionCallArgument | FunctionDefinitionParameter
+        of Name | Expression | Statement | FunctionCallArgument | FunctionDefinitionParameter | DocAnnotation
 {
     shared
     String type => className(this);
