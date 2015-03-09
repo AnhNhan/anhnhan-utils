@@ -27,7 +27,7 @@ String indent(Integer depth, String pad = "    ")
         => pad.repeat(depth);
 
 String padLines(Integer depth, String pad = "    ")(String str)
-        => str.linesWithBreaks.map((line) => indent(depth) + line).fold("")(plus<String>);
+        => "".join(str.linesWithBreaks.map((line) => indent(depth) + line));
 
 shared
 String renderStatement(Statement stmt, Integer scopeDepth = 0)
@@ -49,7 +49,7 @@ String renderStatement(Statement stmt, Integer scopeDepth = 0)
     {
         return padLines(scopeDepth)("namespace ``stmt.name.render()``
                                      {
-                                     ``stmt.statements.map(renderStatementInv(1)).interpose("\n").fold("")(plus<String>)``
+                                     ``"\n".join(stmt.statements.map(renderStatementInv(1)))``
                                      }");
     }
     case (is Return)
@@ -67,15 +67,15 @@ String renderFunctionOrMethod(FunctionOrMethod obj, Integer scopeDepth = 0)
     String modifiers;
     if (is Method obj)
     {
-        modifiers = preprocessModifiers(obj.modifiers)*.render().interpose(" ").fold("")(plus<String>) + " ";
+        modifiers = " ".join(preprocessModifiers(obj.modifiers)*.render()) + " ";
     }
     else
     {
         modifiers = "";
     }
 
-    return padLines(scopeDepth)("``modifiers``function ``obj.name``(``obj.parameters*.render().interpose(", ").fold("")(plus<String>)``) {
-                                 ``obj.statements.map(renderStatementInv(1)).interpose("\n").fold("")(plus<String>)``
+    return padLines(scopeDepth)("``modifiers``function ``obj.name``(``", ".join(obj.parameters*.render())``) {
+                                 ``"\n".join(obj.statements.map(renderStatementInv(1)))``
                                  }
                                  ");
 }
@@ -107,7 +107,7 @@ String renderClassOrInterface(ClassOrInterface obj, Integer scopeDepth = 0)
 
     if (nonempty _implements = obj.implements)
     {
-        implements = "implements ``_implements*.render().interpose(",").fold("")(plus<String>)`` ";
+        implements = "implements ``", ".join(_implements*.render())`` ";
     }
     else
     {
@@ -115,6 +115,6 @@ String renderClassOrInterface(ClassOrInterface obj, Integer scopeDepth = 0)
     }
 
     return "``indent(scopeDepth)````keyword`` ``obj.name`` ``_extends````implements``{
-            ``obj.statements.map(renderStatementInv(scopeDepth + 1)).interpose("\n").fold("")(plus<String>)``
+            ``"\n".join(obj.statements.map(renderStatementInv(scopeDepth + 1)))``
             ``indent(scopeDepth)``}";
 }
