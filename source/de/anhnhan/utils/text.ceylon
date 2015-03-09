@@ -102,3 +102,7 @@ void testWrapText()
 shared
 {String*}(String)(Boolean(Character)=, Boolean=, Boolean=) splitStringBy
         = swapCurried(String.split);
+
+shared
+String ucfirst(String input)
+        => String({input.first?.uppercased, *input.rest}.coalesced);
