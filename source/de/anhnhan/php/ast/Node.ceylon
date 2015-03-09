@@ -86,5 +86,6 @@ interface Expression
 
 shared
 interface Scalar
+        of StringLiteral | NumberLiteral | BooleanLiteral | phpNull
         satisfies Expression
 {}
