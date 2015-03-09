@@ -26,7 +26,7 @@ import de.anhnhan.php.ast {
 String indent(Integer depth, String pad = "    ")
         => pad.repeat(depth);
 
-String padLines(Integer depth, String pad = "    ")(String str)
+String indentLines(Integer depth, String pad = "    ")(String str)
         => "".join(str.linesWithBreaks.map((line) => indent(depth) + line));
 
 shared
@@ -35,7 +35,7 @@ String renderStatement(Statement stmt, Integer scopeDepth = 0)
     switch (stmt)
     case (is Const | Use | Property | ExpressionStatement)
     {
-        return indent(scopeDepth) + stmt.render();
+        return indentLines(scopeDepth)(stmt.render());
     }
     case (is Class | Interface)
     {
@@ -47,10 +47,10 @@ String renderStatement(Statement stmt, Integer scopeDepth = 0)
     }
     case (is Namespace)
     {
-        return padLines(scopeDepth)("namespace ``stmt.name.render()``
-                                     {
-                                     ``"\n".join(stmt.statements.map(renderStatementInv(1)))``
-                                     }");
+        return indentLines(scopeDepth)("namespace ``stmt.name.render()``
+                                        {
+                                        ``"\n".join(stmt.statements.map(renderStatementInv(1)))``
+                                        }");
     }
     case (is Return)
     {
@@ -74,10 +74,10 @@ String renderFunctionOrMethod(FunctionOrMethod obj, Integer scopeDepth = 0)
         modifiers = "";
     }
 
-    return padLines(scopeDepth)("``modifiers``function ``obj.name``(``", ".join(obj.parameters*.render())``) {
-                                 ``"\n".join(obj.statements.map(renderStatementInv(1)))``
-                                 }
-                                 ");
+    return indentLines(scopeDepth)("``modifiers``function ``obj.name``(``", ".join(obj.parameters*.render())``) {
+                                    ``"\n".join(obj.statements.map(renderStatementInv(1)))``
+                                    }
+                                    ");
 }
 
 shared
