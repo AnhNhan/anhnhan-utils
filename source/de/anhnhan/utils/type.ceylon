@@ -11,6 +11,21 @@ import ceylon.test {
     test
 }
 
+shared
+Boolean falsy(Boolean? bool)
+{
+    if (exists bool, bool)
+    {
+        return true;
+    }
+    return false;
+}
+
+shared
+Callable<Boolean, Args> falsyFun<Args>(Callable<Boolean?, Args> fun)
+        given Args satisfies Anything[]
+        => flatten((Args args) => falsy(fun(*args)));
+
 "Checks whether the given [[input]]is a value of the given type.
 
  Usefulness in filter applications is limited, since the resulting iterable will
