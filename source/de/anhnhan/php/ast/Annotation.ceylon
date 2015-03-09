@@ -24,7 +24,7 @@ class DocAnnotation(
 )
         satisfies Node & Renderable
 {
-    render() => "@``name````parameters.empty then "" else ("(" + ", ".join(parameters*.render()) + ")")``";
+    render() => "@``name.render()````parameters.empty then "" else ("(" + ", ".join(parameters*.render()) + ")")``";
 }
 
 shared

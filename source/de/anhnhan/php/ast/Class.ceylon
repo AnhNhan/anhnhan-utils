@@ -128,6 +128,19 @@ shared
             then {private, *modifiers}
             else modifiers;
 
+shared
+String renderDocBlock({DocAnnotation*} annotations)
+{
+    if (annotations.empty)
+    {
+        return "";
+    }
+    assert (is [DocAnnotation+] _annotations = annotations.sequence());
+    return "/**
+            ``"\n".join(_annotations*.render().map((str) => " * " + str))``
+             */\n";
+}
+
 shared final
 class Method(
     shared
@@ -176,6 +189,6 @@ class Property(
 
         value _modifiers = !computedModifiers.empty then (computedModifiers*.render().interpose(" ").fold("")(plus<String>) + " ") else "";
         value expr = default exists then " = ``default?.render() else nothing``" else "";
-        return "``_modifiers``$``name````expr``;";
+        return "``renderDocBlock(annotations)````_modifiers``$``name````expr``;";
     }
 }
