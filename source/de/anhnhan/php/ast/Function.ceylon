@@ -18,7 +18,7 @@ class Function(
     shared actual
     {FunctionDefinitionParameter*} parameters = {},
     shared actual
-    {Statement*} statements = {},
+    {Statement|Expression*} statements = {},
     shared actual
     Boolean byRef = false,
     shared actual

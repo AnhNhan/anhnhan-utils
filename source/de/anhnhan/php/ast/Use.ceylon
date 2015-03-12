@@ -19,7 +19,7 @@ class Use(
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
 )
-        satisfies Statement & Renderable
+        satisfies TypeDeclarationBodyStatement & Renderable
 {
     render()
             => "use ``uses.map((use) => use.key.render() + (use.item exists then " as ``(use.item else nothing)``" else "")).interpose(", ").fold("")(plus<String>)``;";

@@ -49,6 +49,9 @@ interface ClassOrInterface
     shared formal
     {DocAnnotation*} annotations;
 
+    shared actual formal
+    {TypeDeclarationBodyStatement*} statements;
+
     shared
     Boolean abstract
             => _abstract in (this of Modifyable).modifiers;
@@ -65,7 +68,7 @@ class Class(
     shared actual
     Name[] implements = [],
     shared actual
-    {Statement*} statements = [],
+    {TypeDeclarationBodyStatement*} statements = [],
     shared actual
     {DocAnnotation*} annotations = {},
     shared actual
@@ -89,14 +92,14 @@ class Interface(
     shared actual
     Name[] implements = [],
     shared actual
-    {Statement*} statements = [],
+    {TypeDeclarationBodyStatement*} statements = [],
     shared actual
     {DocAnnotation*} annotations = {},
     shared actual
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
 )
-        satisfies Statement & SubStatements & Modifyable & ClassOrInterface
+        satisfies SubStatements & Modifyable & ClassOrInterface
 {
     if (name in reservedClassNames)
     {
@@ -116,7 +119,7 @@ class Const(
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
 )
-        satisfies Statement & Modifyable & Renderable
+        satisfies TypeDeclarationBodyStatement & Modifyable & Renderable
 {
     render() => "``static in modifiers then "static " else ""`` const ``name`` = ``expr.render()``;";
 }
@@ -180,7 +183,7 @@ class Property(
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()
 )
-        satisfies Statement & Modifyable & Renderable
+        satisfies TypeDeclarationBodyStatement & Modifyable & Renderable
 {
     shared actual
     String render()

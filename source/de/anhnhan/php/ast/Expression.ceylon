@@ -12,17 +12,9 @@ import ceylon.collection {
 }
 
 shared
-class ExpressionStatement(
-    shared
-    Expression expr,
-    shared actual
-    MutableMap<String, Object> attributes
-            = HashMap<String, Object>()
-)
-        satisfies Statement & Renderable
+interface Expression
+        satisfies Node & Renderable
 {
-    shared actual
-    String render() => "``expr.render()``;";
 }
 
 shared

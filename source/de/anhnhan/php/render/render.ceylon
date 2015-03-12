@@ -18,9 +18,9 @@ import de.anhnhan.php.ast {
     Statement,
     FunctionOrMethod,
     Return,
-    ExpressionStatement,
     Use,
-    preprocessModifiers
+    preprocessModifiers,
+    Expression
 }
 
 String indent(Integer depth, String pad = "    ")
@@ -30,12 +30,12 @@ String indentLines(Integer depth, String pad = "    ")(String str)
         => "".join(str.linesWithBreaks.map((line) => indent(depth) + line));
 
 shared
-String renderStatement(Statement stmt, Integer scopeDepth = 0)
+String render(Statement|Expression stmt, Integer scopeDepth = 0)
 {
     switch (stmt)
-    case (is Const | Use | Property | ExpressionStatement)
+    case (is Const | Use | Property | Expression)
     {
-        return indentLines(scopeDepth)(stmt.render());
+        return indentLines(scopeDepth)(stmt.renderAsStatement());
     }
     case (is Class | Interface)
     {
@@ -58,8 +58,8 @@ String renderStatement(Statement stmt, Integer scopeDepth = 0)
     }
 }
 
-String renderStatementInv(Integer scopeDepth)(Statement stmt)
-        => renderStatement(stmt, scopeDepth);
+String renderStatementInv(Integer scopeDepth)(Statement|Expression stmt)
+        => render(stmt, scopeDepth);
 
 shared
 String renderFunctionOrMethod(FunctionOrMethod obj, Integer scopeDepth = 0)

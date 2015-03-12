@@ -11,7 +11,7 @@ import ceylon.collection {
 }
 
 import de.anhnhan.php.ast {
-    ExpressionStatement
+    Expression
 }
 
 shared
@@ -48,40 +48,6 @@ interface Node
             attributes.remove("startLine");
         }
     }
-}
-
-shared
-interface SubStatements
-{
-    shared formal
-    {Statement*} statements;
-}
-
-shared
-interface Statement
-        of ClassOrInterface | FunctionOrMethod | Const | Property | Namespace | Return | ExpressionStatement | Use
-        satisfies Node
-{}
-
-shared
-interface FunctionOrMethod
-        of Function | Method
-        satisfies Statement & SubStatements
-{
-    shared formal
-    String name;
-
-    shared formal
-    {FunctionDefinitionParameter*} parameters;
-
-    shared formal
-    Boolean byRef;
-}
-
-shared
-interface Expression
-        satisfies Node & Renderable
-{
 }
 
 shared
