@@ -26,6 +26,15 @@ shared Return acceptEntry<Return, Key, Item>(Callable<Return, [Key, Item]> calla
     given Key satisfies Object
     => callable(entry.key, entry.item);
 
+shared Key->Return onItem<Key, Item, Return>(Return transform(Item item))(Key->Item entry)
+    given Key satisfies Object
+    => entry.key->transform(entry.item);
+
+shared Return->Item onKey<Key, Item, Return>(Return transform(Key item))(Key->Item entry)
+    given Key satisfies Object
+    given Return satisfies Object
+    => transform(entry.key)->entry.item;
+
 "Invokes all callables in a stream of void() functions."
 shared void invokeAll({Callable<Anything, []>*} callables)
     => callables.collect((callable) => callable());
