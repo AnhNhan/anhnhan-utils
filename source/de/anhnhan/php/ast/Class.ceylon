@@ -18,6 +18,9 @@ interface Modifyable
 {
     shared formal
     {Modifier*} modifiers;
+
+    shared
+    Boolean abstract => _abstract in modifiers;
 }
 
 shared
@@ -51,10 +54,6 @@ interface ClassOrInterface
 
     shared actual formal
     {TypeDeclarationBodyStatement*} statements;
-
-    shared
-    Boolean abstract
-            => _abstract in (this of Modifyable).modifiers;
 }
 
 shared final
@@ -152,6 +151,8 @@ class Method(
     {Modifier*} modifiers = {},
     shared
     {DocAnnotation*} annotations = {},
+    shared
+    Boolean inInterface = false,
     shared actual
     MutableMap<String, Object> attributes
             = HashMap<String, Object>()

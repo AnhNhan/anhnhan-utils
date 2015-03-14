@@ -65,15 +65,23 @@ shared
 String renderFunctionOrMethod(FunctionOrMethod obj, Integer scopeDepth = 0)
 {
     String modifiers;
+    Boolean abstractDecl;
+
     if (is Method obj)
     {
         modifiers = " ".join(preprocessModifiers(obj.modifiers)*.render()) + " ";
+        abstractDecl = obj.inInterface && obj.abstract;
     }
     else
     {
         modifiers = "";
+        abstractDecl = false;
     }
 
+    if (abstractDecl)
+    {
+        return indent(scopeDepth) + "``modifiers``function ``obj.name``(``", ".join(obj.parameters*.render())``);";
+    }
     return indentLines(scopeDepth)("``modifiers``function ``obj.name``(``", ".join(obj.parameters*.render())``) {
                                     ``"\n".join(obj.statements.map(renderStatementInv(1)))``
                                     }
@@ -84,6 +92,7 @@ shared
 String renderClassOrInterface(ClassOrInterface obj, Integer scopeDepth = 0)
 {
     value keyword = obj is Interface then "interface" else "class";
+    value implementsKeyword = obj is Interface then "extends" else "implements";
     String _extends;
     String implements;
 
@@ -107,7 +116,7 @@ String renderClassOrInterface(ClassOrInterface obj, Integer scopeDepth = 0)
 
     if (nonempty _implements = obj.implements)
     {
-        implements = "implements ``", ".join(_implements*.render())`` ";
+        implements = "``implementsKeyword`` ``", ".join(_implements*.render())`` ";
     }
     else
     {
