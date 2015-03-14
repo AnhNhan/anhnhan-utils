@@ -70,7 +70,7 @@ String renderFunctionOrMethod(FunctionOrMethod obj, Integer scopeDepth = 0)
     if (is Method obj)
     {
         modifiers = " ".join(preprocessModifiers(obj.modifiers)*.render()) + " ";
-        abstractDecl = obj.inInterface && obj.abstract;
+        abstractDecl = obj.inInterface;
     }
     else
     {
