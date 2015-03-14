@@ -83,7 +83,7 @@ String renderFunctionOrMethod(FunctionOrMethod obj, Integer scopeDepth = 0)
 shared
 String renderClassOrInterface(ClassOrInterface obj, Integer scopeDepth = 0)
 {
-    value keyword = obj.abstract then "interface" else "class";
+    value keyword = obj is Interface then "interface" else "class";
     String _extends;
     String implements;
 
