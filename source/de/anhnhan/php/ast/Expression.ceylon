@@ -18,6 +18,21 @@ interface Expression
 }
 
 shared
+interface SpecialClassRef
+        of static | self | parent
+        satisfies Expression
+{
+    // Dead. Gets re-initialized on every invokation.
+    shared actual
+    MutableMap<String, Object> attributes
+            => HashMap<String, Object>();
+}
+
+shared object static satisfies SpecialClassRef { render() => "static"; }
+shared object self satisfies SpecialClassRef { render() => "self"; }
+shared object parent satisfies SpecialClassRef { render() => "parent"; }
+
+shared
 class NewObject(
     shared
     Name|VariableReference|StringLiteral className,
