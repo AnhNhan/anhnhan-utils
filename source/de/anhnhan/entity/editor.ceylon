@@ -61,11 +61,11 @@ shared abstract class TransactionEditor
     >
     (
         "Currently only the Uid of the actor, may or may not change to Uid|Actor or Just<Actor> in the future."
-        shared Uid actor,
+        Uid actor,
         "The entity object to apply transactions against."
-        shared Obj entity,
+        Obj entity,
         "The transactions we have to apply."
-        variable {Xact*} transactions
+        {Xact*} transactions
     )
     satisfies Editor<XactSet>
     given XactType satisfies TransactionType
@@ -82,7 +82,7 @@ shared abstract class TransactionEditor
 
     "This is the plughole to create your own persistable TransactionSet instance
      that you know how to persist on your own in `persistTransactionSet(TransactionSet)`."
-    shared formal XactSet createTransactionSet(Obj entity, {Xact*} transactions);
+    shared formal XactSet createTransactionSet(Uid actor, Obj entity, {Xact*} transactions);
     "Persist (or queue up to persist) a TransactionSet instance."
     shared formal void persistTransactionSet(XactSet xactSet);
 
@@ -141,7 +141,7 @@ shared abstract class TransactionEditor
         value xacts = transactions;
         if (xacts.empty)
         {
-            return createTransactionSet(entity, xacts);
+            return createTransactionSet(actor, entity, xacts);
         }
 
         for (xact in xacts)
@@ -200,7 +200,7 @@ shared abstract class TransactionEditor
 
         persistObject(entity);
 
-        value xactSet = createTransactionSet(entity, _xacts);
+        value xactSet = createTransactionSet(actor, entity, _xacts);
         persistTransactionSet(xactSet);
 
         if (flushBehavior == flushFlush)
