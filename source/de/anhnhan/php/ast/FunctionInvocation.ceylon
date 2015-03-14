@@ -14,7 +14,7 @@ import ceylon.collection {
 shared
 class FunctionInvocation(
     shared
-    VariableReference|PropertyReference|Name func,
+    VariableReference|PropertyReference|StaticReference|Name func,
     shared
     {FunctionCallArgument*} parameters,
     shared actual

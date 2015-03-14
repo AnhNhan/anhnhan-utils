@@ -81,6 +81,40 @@ class PropertyReference(
     }
 }
 
+shared final
+class StaticReference(
+    shared
+    Expression objExpr,
+    shared
+    Expression|String property,
+    shared actual
+    MutableMap<String, Object> attributes
+            = HashMap<String, Object>()
+)
+        satisfies Expression
+{
+    // TODO: Too lazy?
+    shared actual
+    String render()
+    {
+        String renderedProperty;
+        if (is String property)
+        {
+            renderedProperty = property;
+        }
+        else if (is Expression property)
+        {
+            renderedProperty = property.render();
+        }
+        else
+        {
+            assert (false);
+        }
+
+        return "``objExpr.render()``::``renderedProperty``";
+    }
+}
+
 shared
 PropertyReference thisRef(Expression|String property)
         => PropertyReference(VariableReference("this"), property);
@@ -94,3 +128,8 @@ VariableReference(String, MutableMap<String, Object>=) varRef
 shared
 PropertyReference(Expression, Expression|String, MutableMap<String, Object>=) propRef
         = `PropertyReference`;
+
+"Alias for writing less in more time."
+shared
+StaticReference(Expression, Expression|String, MutableMap<String, Object>=) staticRef
+        = `StaticReference`;
