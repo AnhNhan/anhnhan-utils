@@ -22,7 +22,7 @@ interface Modifyable
 
 shared
 interface Modifier
-        of public | protected | private | static | _abstract | _final
+        of public | protected | private | _static | _abstract | _final
 {
     shared formal
     String render();
@@ -31,7 +31,7 @@ interface Modifier
 shared object public satisfies Modifier { render() => "public"; }
 shared object protected satisfies Modifier { render() => "protected"; }
 shared object private satisfies Modifier { render() => "private"; }
-shared object static satisfies Modifier { render() => "static"; }
+shared object _static satisfies Modifier { render() => "static"; }
 shared object _abstract satisfies Modifier { render() => "abstract"; }
 shared object _final satisfies Modifier { render() => "final"; }
 
@@ -121,7 +121,7 @@ class Const(
 )
         satisfies TypeDeclarationBodyStatement & Modifyable & Renderable
 {
-    render() => "``static in modifiers then "static " else ""`` const ``name`` = ``expr.render()``;";
+    render() => "``_static in modifiers then "static " else ""`` const ``name`` = ``expr.render()``;";
 }
 
 "For class and interface members, not for classes and interfaces themselves."
@@ -158,7 +158,7 @@ class Method(
 )
         satisfies FunctionOrMethod & Modifyable
 {
-    if (func.name in ["__construct", "__destruct", "__clone"], static in modifiers)
+    if (func.name in ["__construct", "__destruct", "__clone"], _static in modifiers)
     {
         throw Exception("Method ``func.name`` cannot be static.");
     }
