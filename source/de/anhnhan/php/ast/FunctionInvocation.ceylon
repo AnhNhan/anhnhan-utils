@@ -14,7 +14,7 @@ import ceylon.collection {
 shared
 class FunctionInvocation(
     shared
-    VariableReference|PropertyReference|StaticReference|Name func,
+    VariableReference|PropertyReference|StaticReference|Name|StringLiteral func,
     shared
     {FunctionCallArgument*} parameters,
     shared actual
@@ -23,5 +23,5 @@ class FunctionInvocation(
 )
         satisfies Expression
 {
-    render() => "``func.render()``(``parameters*.render().interpose(", ").fold("")(plus<String>)``)";
+    render() => "``func.render()``(``", ".join(parameters*.render())``)";
 }
