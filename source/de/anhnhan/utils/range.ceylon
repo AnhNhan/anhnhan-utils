@@ -9,6 +9,10 @@
 import ceylon.collection {
     group
 }
+import ceylon.test {
+    assertEquals,
+    test
+}
 
 shared {Elements*} chainAll<Elements>({Elements*}+ iterators)
     given Elements satisfies Object
@@ -73,4 +77,22 @@ shared Element|Absent pick_random<Element, Absent>(
         assert(is Element|Absent val = list.getFromFirst(random(list.size)));
         return val;
     }
+}
+
+"Inserts the given [[element]] after the [[nth|index]] element in a given [[list]],
+ leaving the original list untouched (but retaining its elements).
+
+ Passing 0 to [[index]] inserts the element at the beginning of the list,
+ passing a value equal or greater than `list.size` will append the element to
+ the list."
+shared Iterable<Element|Insertion, Nothing> insertAt<Element, Insertion>({Element*} list, Integer index, Insertion element)
+        => list.take(index).chain({element, *list.skip(index)});
+
+test
+void testInsertAt()
+{
+    assertEquals(insertAt([1, 2, 4], 2, 3).sequence(), [1, 2, 3, 4]);
+    assertEquals(insertAt([1, 2, 4], 0, 3).sequence(), [3, 1, 2, 4]);
+    assertEquals(insertAt([1, 2, 4], 3, 3).sequence(), [1, 2, 4, 3]);
+    assertEquals(insertAt([], 2, 3).sequence(), [3]);
 }
