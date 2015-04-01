@@ -27,11 +27,31 @@ class Column<Element>(
     {
         if (state in states)
         {
+            print("Didn't add state ``state``.");
             return false;
         }
 
         state.end_column = this;
         states.add(state);
+        print("Added state ``state``.");
+        print ("``states``.\n\n");
         return true;
+    }
+
+    shared
+    String prettyPrint(Boolean show_uncompleted = true)
+    {
+        variable
+        String result = "\nColumn [``index``] '``token``'
+                         =======================================";
+        for (st in states)
+        {
+            if (st.completed || show_uncompleted)
+            {
+                result += st.string + "\n";
+            }
+        }
+        result += "\n";
+        return result;
     }
 }

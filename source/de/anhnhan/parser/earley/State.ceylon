@@ -6,6 +6,10 @@
     Software provided as-is, no warranty
  */
 
+import de.anhnhan.utils {
+    insertAt
+}
+
 shared final
 class State<Element>(
     shared
@@ -17,6 +21,7 @@ class State<Element>(
     shared
     Column<Element> start_column
 )
+        extends Object()
 {
     assert (!name.empty);
     assert (dot_index >= 0);
@@ -70,4 +75,27 @@ class State<Element>(
     {
         next_term = null;
     }
+
+    string = "``name`` -> ``" ".join(insertAt(production*.string, dot_index + 1, "$"))`` [``start_column.index`` - ``end_column?.index else "<no end column>"``]``completed then " (incomplete)" else ""``";
+
+    shared actual
+    Boolean equals(Object that)
+    {
+        if (is State<Element> that)
+        {
+            return every
+            {
+                name == that.name,
+                production == that.production,
+                dot_index == that.dot_index,
+                start_column == that.start_column
+            };
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    hash = 31*name.hash*dot_index.hash*production.hash*start_column.hash;
 }

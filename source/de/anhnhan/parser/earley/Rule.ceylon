@@ -11,6 +11,10 @@ import ceylon.collection {
     LinkedList
 }
 
+import de.anhnhan.utils {
+    pickOfType
+}
+
 shared
 class Rule<Element>(
     shared
@@ -28,6 +32,8 @@ class Rule<Element>(
     shared
     void add(Production<Element> production)
             => productions.add(production);
+
+    string = "``name`` -> ``" | ".join(productions.map((terms) => terms.map((term) { if (is Rule<Element> term) { return "<``term.name``>"; } else { return term.string; } })))``";
 
     shared actual
     Boolean equals(Object that)
@@ -48,7 +54,14 @@ class Rule<Element>(
     {
         variable value hash = 1;
         hash = 31*hash + name.hash;
-        hash = 31*hash + productions.hash;
+        hash = 31*hash + productions.map((term)
+            {
+                if (is Rule<Element> term)
+                {
+                    return term.name.hash + 31*pickOfType<Terminal<Element>>(term.productions).hash;
+                }
+                return term.hash;
+            }).hash;
         return hash;
     }
 }

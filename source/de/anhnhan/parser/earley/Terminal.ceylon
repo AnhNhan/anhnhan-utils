@@ -14,6 +14,8 @@ shared final
 class Terminal<Element>(shared Element terminal)
         extends ProductionTerm<Element>()
 {
+    string = terminal?.string else "<null>";
+
     shared actual
     Boolean equals(Object that)
     {

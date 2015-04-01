@@ -1,6 +1,3 @@
-import de.anhnhan.utils {
-    acceptEntry
-}
 /**
     Anh Nhan's utilities library
 
@@ -8,6 +5,10 @@ import de.anhnhan.utils {
 
     Software provided as-is, no warranty
  */
+
+import de.anhnhan.utils {
+    acceptEntry
+}
 
 void predict<Element>(Column<Element> column, Rule<Element> rule)
         => rule.map((prod) => State(rule.name, prod, 0, column)).collect(column.add);
@@ -45,9 +46,15 @@ void complete<Element>(Column<Element> column, State<Element> state)
 shared
 State<String> parseString(Rule<String> rule, String text)
 {
-    value gamma_rule = "gamme-rule asdf";
+    value gamma_rule = "gamme-rule asdf \{LATIN SMALL LETTER GAMMA}";
 
-    value tokens = [""].append(text.split().sequence());
+    value tokens = text.split().sequence();
+    if (tokens.empty) // For now, throw an exception
+    {
+        throw Exception("Empty input.");
+    }
+    assert (nonempty tokens);
+
     value table = tokens.indexed.map(acceptEntry((Integer ii, String token) => Column(ii, Terminal(token))));
     table.first.add(State(gamma_rule, [rule], 0, table.first));
 
@@ -93,6 +100,6 @@ State<String> parseString(Rule<String> rule, String text)
         }
     }
 
-    print(table);
+    print("\n\n".join(table*.prettyPrint()));
     throw Exception("Parsing failed!");
 }
