@@ -33,7 +33,7 @@ class Rule<Element>(
     void add(Production<Element> production)
             => productions.add(production);
 
-    string = "``name`` -> ``" | ".join(productions.map((terms) => terms.map((term) { if (is Rule<Element> term) { return "<``term.name``>"; } else { return term.string; } })))``";
+    string => "``name`` -> ``" | ".join(productions.map((terms) => terms.map((term) { if (is Rule<Element> term) { return "<``term.name``>"; } else { return term.string; } })))``";
 
     shared actual
     Boolean equals(Object that)

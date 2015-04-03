@@ -76,7 +76,7 @@ class State<Element>(
         next_term = null;
     }
 
-    string = "``name`` -> ``" ".join(insertAt(production*.string, dot_index + 1, "$"))`` [``start_column.index`` - ``end_column?.index else "<no end column>"``]``completed then " (incomplete)" else ""``";
+    string => "``name`` -> ``" ".join(insertAt(production*.string, dot_index + 1, "$"))`` [``start_column.index`` - ``end_column?.index else "<no end column>"``]``completed then " (incomplete)" else ""``";
 
     shared actual
     Boolean equals(Object that)
