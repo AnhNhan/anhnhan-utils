@@ -1,0 +1,17 @@
+{
+    "folders": [
+        {
+            "path": "source",
+            "name": "anhnhan-utils Source"
+        },
+        {
+            "folder_exclude_patterns":
+            [
+                "anhnhan-utils/source"
+            ],
+            "follow_symlinks": true,
+            "name": "anhnhan-utils root",
+            "path": "."
+        }
+    ]
+}
