@@ -20,18 +20,13 @@ import ceylon.test {
 
 "Similar to `between`, but also returns the delimeters."
 shared
-ParseResult<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement> enclosedBy<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
+ParseResult<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement> enclosedBy<DelimLiteral, InnerLiteral, InputElement>(Parser<DelimLiteral, InputElement> delim, Parser<InnerLiteral, InputElement> inner, Parser<DelimLiteral, InputElement> delimRight = delim)({InputElement*} input)
 {
-    Parser<DelimLiteral, InputElement> delim;
-    Parser<InnerLiteral, InputElement> inner;
-    Parser<DelimLiteral, InputElement> delimRight;
-
     value delimResult = delim(input);
     if (is Error<DelimLiteral, InputElement> delimResult)
     {
         return delimResult.toJustError.appendMessage("Missing starting delimeter in enclosing parse.");
     }
-    assert(is Ok<DelimLiteral, InputElement> delimResult);
 
     value _inners = LinkedList<InnerLiteral>();
     variable
@@ -57,7 +52,6 @@ ParseResult<[DelimLiteral, InnerLiteral[], DelimLiteral], InputElement> enclosed
     {
         return PointOutTheError(input.take(input.size - delimRightResult.rest.size), delimRightResult.rest, ["Missing ending delimeter in enclosing parse."]);
     }
-    assert(is Ok<DelimLiteral, InputElement> delimRightResult);
 
     return ok([delimResult.result, inners.result, delimRightResult.result], delimRightResult.rest);
 }
@@ -101,12 +95,8 @@ void testEnclosedByLiteral()
 
 "[[inner]] is possibly-empty."
 shared
-ParseResult<InnerLiteral[], InputElement> between<DelimLiteral, InnerLiteral, InputElement>(delim, inner, delimRight = delim)({InputElement*} input)
+ParseResult<InnerLiteral[], InputElement> between<DelimLiteral, InnerLiteral, InputElement>(Parser<DelimLiteral, InputElement> delim, Parser<InnerLiteral, InputElement> inner, Parser<DelimLiteral, InputElement> delimRight = delim)({InputElement*} input)
 {
-    Parser<DelimLiteral, InputElement> delim;
-    Parser<InnerLiteral, InputElement> inner;
-    Parser<DelimLiteral, InputElement> delimRight;
-
     value result = enclosedBy(delim, inner, delimRight)(input);
 
     switch (result)

@@ -63,13 +63,9 @@ interface LookaheadHandler<out Literal, InputElement>
         {
             return matcher(input);
         }
-        else if (is Parser<Anything, InputElement> matcher)
-        {
-            return isApplicable(matcher)(input);
-        }
         else
         {
-            assert (false);
+            return isApplicable(matcher)(input);
         }
     }
 }

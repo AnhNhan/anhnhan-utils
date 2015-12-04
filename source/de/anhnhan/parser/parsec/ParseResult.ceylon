@@ -282,8 +282,6 @@ class ExpectedLiteral<out Result, out InputElement>(Result|{Result*} _expected, 
     }
     else
     {
-        "Insufficient type narrowing."
-        assert(is Result _expected);
         expected = [_expected];
     }
 

@@ -82,8 +82,6 @@ shared abstract class BaseApplication(context, ClassDeclaration* controllerDecla
         {
             return context.service<Service>();
         }
-        "flow-sensitive typing will make this assert obselete in 1.1.5 or 1.2"
-        assert(exists serviceName);
 
         value service = context.services[serviceName];
         if (is Service? service)
@@ -92,7 +90,7 @@ shared abstract class BaseApplication(context, ClassDeclaration* controllerDecla
         }
 
         value t = `Service`;
-        throw Exception("Service ``serviceName`` is misconfigured, expected service of type ``t`` but received object of type ``className(service else "<err>")``");
+        throw Exception("Service ``serviceName`` is misconfigured, expected service of type ``t`` but received object of type ``className(service)``");
     }
 
     shared actual Parameter? getParameter<Parameter = String>(String parameterName)
@@ -103,7 +101,7 @@ shared abstract class BaseApplication(context, ClassDeclaration* controllerDecla
             return parameter;
         }
         value t = `Parameter`;
-        throw Exception("Parameter ``parameterName`` is misconfigured, expected service of type ``t`` but received object of type ``className(parameter else "<err>")``");
+        throw Exception("Parameter ``parameterName`` is misconfigured, expected service of type ``t`` but received object of type ``className(parameter)``");
     }
 }
 

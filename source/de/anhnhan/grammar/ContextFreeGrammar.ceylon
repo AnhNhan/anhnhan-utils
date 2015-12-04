@@ -58,7 +58,6 @@ ContextFreeGrammar<Token> grammar<Token>(
         }
         else
         {
-            assert(is ContextFreeGrammar<Token> obj);
             value rules = obj.rules.items.collect((Rule<Token> rule) => rule.name->rule);
             if (nonempty rules)
             {
@@ -135,7 +134,6 @@ interface ContextFreeGrammar<Token>
         {
             throw Exception("Start rule <``startRuleName``> does not exist.");
         }
-        assert(exists _startRule);
         return applyRules<Token>([_startRule], count, rules, productionCache);
     }
 
@@ -184,7 +182,7 @@ interface ContextFreeGrammar<Token>
             }
 
             value randomProduction = pick_random(rule.productions, LCG().random);
-            value applied = applyRules(randomProduction, counter, rules, productionCache);
+            value applied = applyRules<Token>(randomProduction, counter, rules, productionCache);
 
             if (is CachedRuleReference production)
             {
@@ -193,14 +191,9 @@ interface ContextFreeGrammar<Token>
 
             output.add(applied);
         }
-        else if (is Token production)
-        {
-            output.add({production});
-        }
         else
         {
-            value t = className(production else 0);
-            throw Exception("Unaccounted case for ``production else "<null>"`` (``t.string``)");
+            output.add({production});
         }
     }
 

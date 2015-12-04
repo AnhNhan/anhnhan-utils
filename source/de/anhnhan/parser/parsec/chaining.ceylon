@@ -15,11 +15,8 @@ import ceylon.test {
 }
 
 shared
-ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, SecondLiteral, InputElement>(firstP, secondP)({InputElement*} input)
+ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, SecondLiteral, InputElement>(Parser<FirstLiteral, InputElement> firstP,  Parser<SecondLiteral, InputElement>secondP)({InputElement*} input)
 {
-    Parser<FirstLiteral, InputElement> firstP;
-    Parser<SecondLiteral, InputElement> secondP;
-
     return firstP(input).bind {
         (firstR) => secondP(firstR.rest).bind {
             (secondR) => ok([firstR.result, secondR.result], secondR.rest);
@@ -30,9 +27,8 @@ ParseResult<[FirstLiteral, SecondLiteral], InputElement> and<FirstLiteral, Secon
 }
 
 shared
-ParseResult<[Literal+], InputElement> sequence<Literal, InputElement>(parsers)({InputElement*} input)
+ParseResult<[Literal+], InputElement> sequence<Literal, InputElement>(Parser<Literal, InputElement>+ parsers)({InputElement*} input)
 {
-    Parser<Literal, InputElement>+ parsers;
     variable value _input = input;
     value results = LinkedList<Literal>();
 

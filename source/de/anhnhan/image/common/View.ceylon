@@ -18,7 +18,7 @@ interface View<Element>
     shared formal
     Integer width;
 
-    shared formal
+    shared formal actual
     Element? get([Integer, Integer] key);
 
     shared actual default
@@ -50,7 +50,7 @@ interface Scanline<Element>
     shared formal
     Integer width;
 
-    shared formal
+    shared formal actual
     Element get(Integer index);
 
     shared default actual

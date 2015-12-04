@@ -102,13 +102,9 @@ class StaticReference(
         {
             renderedProperty = property;
         }
-        else if (is Expression property)
-        {
-            renderedProperty = property.render();
-        }
         else
         {
-            assert (false);
+            renderedProperty = property.render();
         }
 
         return "``objExpr.render()``::``renderedProperty``";

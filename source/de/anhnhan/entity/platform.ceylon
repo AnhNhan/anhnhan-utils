@@ -172,8 +172,4 @@ String genericSqlTypeDeclaration(SqlType type, FieldAnnotation? field, DbPlatfor
     {
         throw Exception("No sane defaults for type ``type.name`` (on platform ``platform.name``)");
     }
-    else
-    {
-        throw Exception("Don't know how to handle type '``type.name``' (on platform ``platform.name``)");
-    }
 }

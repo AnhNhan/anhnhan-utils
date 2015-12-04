@@ -24,14 +24,14 @@ import de.anhnhan.parser.parsec {
 }
 
 shared
-StringParser newline
+StringParser<Character> newline
         = literal('\n');
 shared
 StringParser<Character[]> skipNewline
         = skipLiteral('\n');
 
 shared
-StringParser whitespace
+StringParser<Character> whitespace
         = satisfy(Character.whitespace);
 shared
 StringParser<[]> skipWhitespace
@@ -44,39 +44,39 @@ StringParser<Literal> trimWhitespace<Literal>(Parser<Literal, Character> parser)
         => ignoreSurrounding<Literal, Character>(zeroOrMore(whitespace))(parser);
 
 shared
-StringParser tab
+StringParser<Character> tab
         = literal('\t');
 
 shared
-StringParser lowercase
+StringParser<Character> lowercase
         = satisfy(isLower);
 
 shared
-StringParser uppercase
+StringParser<Character> uppercase
         = satisfy(isUpper);
 
 shared
-StringParser asciiLower
+StringParser<Character> asciiLower
         = satisfy(isAsciiLower);
 
 shared
-StringParser asciiUpper
+StringParser<Character> asciiUpper
         = satisfy(isAsciiUpper);
 
 shared
-StringParser letter
+StringParser<Character> letter
         = satisfy(isLetter);
 
 shared
-StringParser asciiLetter
+StringParser<Character> asciiLetter
         = satisfy(isAsciiLetter);
 
 shared
-StringParser digit
+StringParser<Character> digit
         = satisfy(isDigit);
 
 shared
-StringParser hex
+StringParser<Character> hex
         = satisfy(isHex);
 
 shared
@@ -84,5 +84,5 @@ StringParser<Character[]> keyword({Character*} keyword)
         => left(literals(String(keyword)), satisfy(ceylon_not(isLetterOrDigit)));
 
 shared
-StringParser letterOrDigit
+StringParser<Character> letterOrDigit
         = satisfy(isLetterOrDigit);

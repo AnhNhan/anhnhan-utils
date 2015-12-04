@@ -11,7 +11,7 @@ module de.anhnhan.image.processing "dev"
     shared
     import de.anhnhan.image.common "dev";
 
-    import ceylon.collection "1.1.0";
+    import ceylon.collection "1.2.0";
     optional
-    import ceylon.test "1.1.0";
+    import ceylon.test "1.2.0";
 }

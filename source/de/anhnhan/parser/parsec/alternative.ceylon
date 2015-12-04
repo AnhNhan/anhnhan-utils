@@ -9,12 +9,8 @@
 "Attempts to apply the two given parsers in order, and returns the first
  success, or returns both failures."
 shared
-ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLiteral, InputElement>(firstP, secondP, label = "")({InputElement*} input)
+ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLiteral, InputElement>(Parser<FirstLiteral, InputElement> firstP, Parser<SecondLiteral, InputElement> secondP, String label = "")({InputElement*} input)
 {
-    Parser<FirstLiteral, InputElement> firstP;
-    Parser<SecondLiteral, InputElement> secondP;
-    String label;
-
     value firstR = firstP(input);
     if (is Ok<FirstLiteral, InputElement> firstR)
     {
@@ -26,9 +22,6 @@ ParseResult<FirstLiteral|SecondLiteral, InputElement> or<FirstLiteral, SecondLit
     {
         return secondR;
     }
-
-    assert(is Error<FirstLiteral, InputElement> firstR);
-    assert(is Error<SecondLiteral, InputElement> secondR);
 
     return MultitudeOfErrors([firstR, secondR], [*(label.empty then [] else [label])]);
 }

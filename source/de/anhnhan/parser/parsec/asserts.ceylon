@@ -8,12 +8,14 @@
 
 shared
 Ok<Literal, InputElement> requireSuccess<Literal, InputElement>(ParseResult<Literal, InputElement> result)
-        => result.bind
+        => result.bind<Ok<Literal, InputElement>, Nothing>
         {
             (ok) => ok;
             (error)
             {
-                throw Exception(error.string);
+                // TODO: Error information
+                // Returning nothing since assert/throw "return" Anything...
+                return nothing;
             };
         };
 shared

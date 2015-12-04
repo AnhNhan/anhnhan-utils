@@ -102,7 +102,7 @@ String normalizeQueryString(String queryString)
     function splitPair(Boolean splitting(Character char))(String input)
     {
         value split = input.split(splitting);
-        return (split.first else nothing) -> split.rest.first;
+        return (split.first) -> split.rest.first;
     }
 
     value parts = {
