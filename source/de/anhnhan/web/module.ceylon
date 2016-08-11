@@ -9,6 +9,6 @@
 module de.anhnhan.web "dev"
 {
     shared import de.anhnhan.utils "0.1";
-    shared import ceylon.collection "1.2.0";
-    optional import ceylon.test "1.2.0";
+    shared import ceylon.collection "1.2.2";
+    optional import ceylon.test "1.2.2";
 }

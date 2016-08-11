@@ -11,5 +11,5 @@ module de.anhnhan.random "dev"
     import de.anhnhan.utils "0.1";
 
     optional
-    import ceylon.test "1.2.0";
+    import ceylon.test "1.2.2";
 }

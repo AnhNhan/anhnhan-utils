@@ -14,7 +14,7 @@ module de.anhnhan.grammar "dev"
     import de.anhnhan.utils "0.1";
 
     shared
-    import ceylon.collection "1.2.0";
+    import ceylon.collection "1.2.2";
     optional
-    import ceylon.test "1.2.0";
+    import ceylon.test "1.2.2";
 }

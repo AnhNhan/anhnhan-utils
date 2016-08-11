@@ -30,8 +30,8 @@ shared
 {
     value view = downscale(src, comp_width, comp_height);
 
-    value colorField = arrayOfSize(comp_width * comp_height, 0);
-    value hashField = arrayOfSize((comp_width - 1) * comp_height, false);
+    value colorField = Array.ofSize(comp_width * comp_height, 0);
+    value hashField = Array.ofSize((comp_width - 1) * comp_height, false);
     variable
     value ii = 0;
 

@@ -62,12 +62,14 @@ State<String> parseString(Rule<String> rule, String text)
     {
         variable
         value state_index = 0;
-        while (!column.states.empty)
-        {
-            assert (exists state = column.states[state_index++]);
+        print("At column [``ii``]: ``column.prettyPrint()``");
 
+        while (exists state = column.states[state_index++])
+        {
+            print("As state [before ``state_index``] ``state``");
             if (state.completed)
             {
+                print("Completing colum ``ii`` (state ``state_index``): ``state``");
                 complete(column, state);
             }
             else
@@ -75,11 +77,13 @@ State<String> parseString(Rule<String> rule, String text)
                 value term = state.next_term;
                 if (is Rule<String> term)
                 {
+                    print("Predicting column with term ``term``: ``column.prettyPrint()``");
                     predict(column, term);
                 }
                 else if (ii + 1 < table.size, is Terminal<String> term)
                 {
                     assert (exists next_column = table.getFromFirst(ii + 1));
+                    print("Scanning column ``ii``:``state_index`` with term ``term``");
                     scan(next_column, state, term);
                 }
                 else

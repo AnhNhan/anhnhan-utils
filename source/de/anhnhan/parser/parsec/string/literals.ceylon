@@ -17,10 +17,12 @@ import de.anhnhan.parser.parsec {
     satisfy,
     Parser,
     zeroOrMore,
+    or,
     ignore,
     literals,
     left,
-    ignoreSurrounding
+    ignoreSurrounding,
+    emptyLiteral
 }
 
 shared
@@ -82,6 +84,11 @@ StringParser<Character> hex
 shared
 StringParser<Character[]> keyword({Character*} keyword)
         => left(literals(String(keyword)), satisfy(ceylon_not(isLetterOrDigit)));
+
+"Like `keyword`, but allowed to be at end of stream. Useful for e.g. true, false, null"
+shared
+StringParser<Character[]> keyword2({Character*} keyword)
+        => left(literals(String(keyword)), or(satisfy(ceylon_not(isLetterOrDigit)), emptyLiteral<Character>));
 
 shared
 StringParser<Character> letterOrDigit

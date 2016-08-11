@@ -15,6 +15,8 @@ Ok<Literal, InputElement> requireSuccess<Literal, InputElement>(ParseResult<Lite
             {
                 // TODO: Error information
                 // Returning nothing since assert/throw "return" Anything...
+                print("ERROR: Parse error");
+                print(error);
                 return nothing;
             };
         };

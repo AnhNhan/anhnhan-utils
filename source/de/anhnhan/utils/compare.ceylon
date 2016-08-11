@@ -11,6 +11,10 @@ import ceylon.test {
     assertTrue,
     assertFalse
 }
+import ceylon.language.serialization {
+
+    Element
+}
 
 "Since [[Null]] has no reasonably defined equality behavior (how do you declare
  that two absent values coming from wherever are equal), you cannot compare two
@@ -27,6 +31,33 @@ Boolean nullableEquality<Element>(Element? el1, Element? el2)
         if (exists el2)
         {
             return el1 == el2;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if (exists el2)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+}
+
+shared
+Boolean nullableEquals<Element>(Element? el1, Element? el2)
+{
+    if (exists el1)
+    {
+        if (exists el2)
+        {
+            return el1.equals(el2);
         }
         else
         {
